@@ -9,7 +9,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ClayHughes1/candlenterprises.git#home"
+    "url": "git+https://github.com/ClayHughes1/candlenterprises.git#home",
+    "username":"Clay Hughes",
+    "email":"clayhughes1113@gmail.com"
   },
   "author": "Clay Hughes",
   "license": "ISC",
