@@ -5,13 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "set DEBUG=* & nodemon app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --timeout 3200000"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ClayHughes1/candlenterprises.git#home",
-    "username":"Clay Hughes",
-    "email":"clayhughes1113@gmail.com"
+    "username": "Clay Hughes",
+    "email": "clayhughes1113@gmail.com"
   },
   "author": "Clay Hughes",
   "license": "ISC",
@@ -20,17 +20,30 @@
     "delay": 2500
   },
   "dependencies": {
+    "canvas": "^2.11.2",
+    "chart.js": "^3.5.1",
+    "chartjs-node-canvas": "^4.1.6",
     "cookie-parser": "^1.4.6",
+    "csv-parser": "^3.0.0",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "express-session": "^1.18.0",
     "facebook-node-sdk": "^0.2.0",
     "instagram-private-api": "^1.46.1",
     "morgan": "^1.10.0",
+    "mssql": "^10.0.2",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.11",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
-    "passport-local": "^1.0.0"
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "passport-session": "^1.0.2"
+  },
+  "devDependencies": {
+    "axios": "^1.6.8",
+    "install": "^0.13.0",
+    "mocha": "^10.4.0",
+    "npm": "^10.5.0"
   }
 }

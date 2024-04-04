@@ -21,11 +21,11 @@ passport.use(new FacebookStrategy({
 
 
 const postFacebook = (facebook.api(`/1128142815279380/feed`, 'post', { message: 'Hello, world!' }, function(res) {
-  if(!res || res.error) {
-    console.log(!res ? 'error occurred' : res.error);
-    return;
-  }
-  console.log('Post Id: ' + res.id);
+  // if(!res || res.error) {
+  //   console.log(!res ? 'error occurred' : res.error);
+  //   return;
+  // }
+  // console.log('Post Id: ' + res.id);
 }));
 
 const fbAuthenticate = async() =>{

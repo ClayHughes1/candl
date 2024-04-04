@@ -6,6 +6,14 @@
    background-repeat:no-repeat;
 
 }
+.bg-img-nav{
+  /* Background pattern from Toptal Subtle Patterns */
+background-image: url("../images/head_bg_img_2.jpg");
+height: 100%;
+width: 100%;
+background-repeat:repeat;
+
+}
 .footer-bg{
   /* Background pattern from Toptal Subtle Patterns */
 background-image: url("../images/head_bg_img_2.jpg");
@@ -34,7 +42,7 @@ width: 100%;
 }
 
 .head-m-10{
-  margin:10px ;
+  margin:0 ;
 }
 
 /*prevent iOS font size change */
@@ -107,9 +115,9 @@ h6 {
 }
 
 /* reset list style*/
-ol, ul {
+/* ol, ul {
   list-style: none;
-}
+} */
  
 /*reset text input style*/
 [type=date],
@@ -299,6 +307,36 @@ only screen and (min-device-pixel-ratio : 1.5) {
       left: 70%;
   }}
 /* End media styling */
+@keyframes disintegrate {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes snap {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+ h6 {
+  animation: disintegrate 2s ease-in-out forwards, snap 1s ease-in-out 1s forwards;
+}
+
+
+.pre-radio{
+  height:15px;
+  width:15px;
+  background-color: orange;
+  font-size: large;
+  margin-left:15px;
+}
+
+.font-bold{
+  font-weight: bold;
+}
+.text-right{
+  text-align: right;
+}
 
 .hidden{
   display: none;
@@ -355,7 +393,6 @@ margin-bottom: 5px;
 .social {
   background:transparent;
 }
-
 .bg-beige{
   background-color:#F5F5DC ;
 }
@@ -396,8 +433,11 @@ margin-bottom: 5px;
 .pb-10{
   padding:0 0 10px 0;
 }
-pb-1p{
+.pb-1p{
   padding-bottom: 1%;
+}
+.pt-5{
+  padding-top: 5px;
 }
 .fw-bold{
   font-weight: bold;
@@ -442,6 +482,9 @@ pb-1p{
 .ml-16
 {
   margin-left: 16px;
+}
+.mt-10{
+  margin-top: 10px;
 }
 .hlb{
   border-bottom: 5px solid lightblue;
@@ -522,13 +565,15 @@ pb-1p{
 }
 
 .banner a {
-  width: inherit;
+  width: 100%;
   height: inherit;
 }
 
 .banner a img{
   width: 50px;
   height: 50px;
+  padding: 5px;
+  margin:0;
 }
 
 /* tranform css */
@@ -678,4 +723,62 @@ for home page services flip animation */
 
 .services3:hover .card3{
   transform: rotateY(180deg);
+}
+
+/*font css*/
+.font-white{
+  color:#ffffff;
+}
+.font-black{
+  color:#000;
+}
+
+/*background*/
+.bg-ligthblue{
+  background-color: lightblue;
+}
+
+/*Table css*/
+.table tr:hover{
+  cursor: pointer;
+}
+
+.td-hide{
+  display: none;
+}
+
+/*Tool tip style*/
+/* Custom tooltip width */
+.custom-tooltip .tooltip-inner {
+  max-width: 500px;
+  text-align: left;
+}
+
+/*Special Offer css*/
+.f-2{
+  font-size: 2em;;
+}
+.f-5{
+  font-size: 5em;;
+}
+.fs-med{
+  font-size: medium;
+}
+.font-courier{
+  font-style:Courier New;
+}
+.font-red{
+  color: red;
+}
+.ma-0{
+  margin:0;
+}
+.b-lb-4{
+  border:4px solid lightblue;
+}
+.br-30{
+  border-radius: 30px;
+}
+.dis-none{
+  display: none;
 }

@@ -1,0 +1,15 @@
+
+class QuoteInformation {
+  constructor(ClientID, ServiceTypeId, ProjectDescription, EstimatedCost, EstimatedTimeline, AdditionalNotes, DateCreated, DateUpdated) {
+    this.ClientID = ClientID;
+    this.ServiceTypeId = ServiceTypeId;
+    this.ProjectDescription = ProjectDescription;
+    this.EstimatedCost = EstimatedCost;
+    this.EstimatedTimeline = EstimatedTimeline;
+    this.AdditionalNotes = AdditionalNotes;
+    this.DateCreated = DateCreated;
+    this.DateUpdated = DateUpdated;
+  }
+}
+
+module.exports = QuoteInformation;
