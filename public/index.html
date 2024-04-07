@@ -663,133 +663,93 @@
 <script type="text/javascript">
 	let hostRoot = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');	
 
-	let printDict = {
-			Flyers:'Flyers',
-			Invitations:'Invitations',
-			Certificates:'Certificates',
-			Brochures:'Brochures',
-			Presentation:'Presentation',
-			Charts:'Charts',
-			GreetingCards:'Greeting Cards',
-			PostCards:'Post Cards',
-			Menus:'Menus',
-			Newslettr:'Newslettr'
-		};
-
 	$(window).bind('load',function(){
-		$('#discModal').modal('show');
-		// $('#quote').css('display','none');
-		// $('#registerModal').modal('show');
+		getVisit();
+		checkDate();
 		$('#discDiv').css('display','inline-block');
-		// siteData();
 	});
 
-	$("#btnQuote").bind('click',function(){
-		$('#quote').css('display','inline-block');
-		$('#selPrintOutPut').focus();
-		$('#divReqeustHelp').css('display','none');
-	});
-
-	$("#btnRegister").bind('click',function(){
-		$("#regRow").css('display','block');
+	$("#btnQuote").bind('click', function() {
+		$('#quote').css('display', 'inline-block').find('#qservType').focus();
+		$('#divReqeustHelp').css('display', 'none');
 	});
 
 	$('#btnRegister').bind('click',function(){
-		$(':input','#myform')
-		.not(':button, :submit, :reset, :hidden')
-		.val('')
-		.removeAttr('checked')
-		.removeAttr('selected');
+		$("#regRow").css('display','block');
+		$('#myform :input').not(':button, :submit, :reset, :hidden').val('').removeAttr('checked').removeAttr('selected');
 	});
 
-	$('#btnContact').bind('click',function(){
-		$('#divReqeustHelp').css('display','block');
-		$('#selService').focus();
-		$('#quote').css('display','none');
+	$('#btnContact').on('click', function() {
+		$('#divReqeustHelp').css('display', 'block').find('#reqdesc').focus();
+		$('#quote').css('display', 'none');
 	});
 
 	$('#showDisc').bind('click',function(){
 		$('#discDiv').css('display','block');
 	});
 
-	// function siteData(){
-	// 	fetch('/api/cookie').then(
-			
-	// 	);
-	// }
-
 	$('#lnkRequest').bind('click',function(event){
 		event.preventDefault();
 		$('#discModal').modal('hide');
-		$('#quote').css('display','inline-block');
-		$('#btnQouteSubmit').focus();
+		$('#quote').css('display', 'inline-block').find('#qservType').focus();
 	});
 
 	$('#lnkDismissN').bind('click',function(){
 		$('#divNotify').css('display','none');
 	});
 
-	// $('#btnQouteSubmit').bind('click',function(){
-	// 	alert('here');
-
-	// });
-
 	$(document).ready(function() {
-		$('#frmHelp').submit(function(event) {
-			event.preventDefault(); // Prevent the default form submission
-			// Serialize form data
+		$('#frmQoute, #frmHelp').submit(function(event) {
+			event.preventDefault();
 			var formData = $(this).serialize();
-			var url = hostRoot +'/api/requsthelp';
-alert(formData);
-alert(url);
-			// Submit the form via AJAX
-			$.ajax({
-			type: 'POST',
-			url: url,
-			data: formData,
-			success: function(response) {
-				console.log('SUCCESSSSSSSSSSSSSS...\n'+response[0].message);
-				alert(response[0].message);
-				// Display the response message
-				$('#pNotify').text(response[0].message);
-				$('#divNotify').css('display','inline-block');
-			},
-			error: function(xhr, status, error) {
-				console.log('ERROOOOOOOOOOOOOOOOOOOOOORRRRRRRRRRRRRR.................');
-				console.error('Error:', error);
-			}
-			});
-      });
+			var url = $(this).attr('id') == 'frmQoute' ? hostRoot+ '/api/submitquoterequest' : hostRoot + '/api/requsthelp';
+			var formId = $(this).attr('id'); // Get the ID of the submitted form
+			var divToHide;
 
+			// Hide the div based on the form ID
+			divToHide =  formId === 'frmQoute'? 'quote': 'divRequestHelp'
+			alert(divToHide)
+			$.ajax({
+				type: 'POST',
+				url: url,
+				data: formData,
+				success: function(response) {
+					$('#pNotify').text(response[0].message).focus();
+					$('#divNotify').css('display', 'inline-block');
+					$(':input tel textarea email', $(this)).val('').removeAttr('checked').removeAttr('selected');
+					$('#'+divToHide).css('display', 'none');
+				},
+				error: function(xhr, status, error) {
+					console.error('Error:', error);
+				}
+			});
+		});
 	});
 
-	$(document).ready(function() {
 
-		$('#frmQoute').submit(function(event) {
-        event.preventDefault(); // Prevent the default form submission
-        // Serialize form data
-        var formData = $(this).serialize();
+	function checkDate() {
+		fetch('/api/check-date')
+        .then(response => response.json())
+        .then(data => data ? $('#discModal').modal('show') : $('#discModal').modal('hide'))
+        .catch(error => console.error('Error:', error));
+	}
 
-        // Submit the form via AJAX
-        $.ajax({
-          type: 'POST',
-          url: '/api/submitquoterequest',
-          data: formData,
-          success: function(response) {
-			console.log('SUCCESSSSSSSSSSSSSS...\n'+response[0].message);
-			alert(response[0].message);
-            // Display the response message
-            $('#pNotify').text(response[0].message);
-			$('#divNotify').css('display','inline-block');
-          },
-          error: function(xhr, status, error) {
-			console.log('ERROOOOOOOOOOOOOOOOOOOOOORRRRRRRRRRRRRR.................');
-            console.error('Error:', error);
-          }
-        });
-      });
-    });
-
+	function getVisit(){
+		fetch('/api/postVisit', {
+			method: 'POST' // Assuming you're sending a POST request
+		})
+		.then(response => {
+			if (response.ok) {
+				console.log('Visit recorded successfully');
+				// Perform any additional actions if needed
+			} else {
+				console.error('Failed to record visit');
+			}
+		})
+		.catch(error => {
+			console.error('Error recording visit:', error);
+		});
+	}
 </script>
 
 </html>

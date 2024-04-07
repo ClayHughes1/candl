@@ -52,7 +52,7 @@ const clientPool = new sql.ConnectionPool(clientDbConfig);
 const adminPool = new sql.ConnectionPool(adminDbConfig);
 
 const getId = async(idType,object) => {
-    console.log('ID TYPE   \n'+idType);
+    // console.log('ID TYPE   \n'+idType);
     await clientPool.connect()
     // Connect to the database
     const request = await clientPool.request();
@@ -95,7 +95,7 @@ const getId = async(idType,object) => {
                 break;
             case 'CQ':
                 //Client qoute
-                console.log('GETTING THE QOUTE ID ......................... \n');
+                // console.log('GETTING THE QOUTE ID ......................... \n');
                 request.input('srchType', sql.VarChar(50),'CQ');
                 break;
             case '':
@@ -113,10 +113,10 @@ const getId = async(idType,object) => {
 
 
         result = await request.execute('GetIdFromTables');
-        console.log('THE RESULTS ARE ...........   \n'+JSON.stringify(result.recordsets[0][0].SelectedID));
+        // console.log('THE RESULTS ARE ...........   \n'+JSON.stringify(result.recordsets[0][0].SelectedID));
         return result.recordsets[0][0].SelectedID;
     }catch(err){
-        console.log('an error has occurred     '+err);
+        // console.log('an error has occurred     '+err);
     }finally{
         // await clientPool.close();
     }
@@ -129,7 +129,7 @@ const getClient = async() =>{
         const request = await clientPool.connect();
         const result  = await request.query('uspGetSpecialOfferAsJSON');
 
-        console.log('Client Results...................  \n'+JSON.stringify(result));
+        // console.log('Client Results...................  \n'+JSON.stringify(result));
 
         // return userMap;
 
@@ -146,7 +146,7 @@ const getClientsAsJSON = async() =>{
         const request = await clientPool.connect();
         const result  = await request.query('uspGetClientsAsJSON');
         // Return the data as JSON object
-        console.log('records     \n'+JSON.stringify(result.recordsets[0]));
+        // console.log('records     \n'+JSON.stringify(result.recordsets[0]));
     } catch (err) {
         console.error('Error occurred:', err);
         throw err; // Propagate the error
@@ -179,12 +179,8 @@ const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
         // Execute the stored procedure
         const result = await request.execute(storedProcedureName);
 
-        // console.log('results from the global sp execute funtion   \n'+result);
-        // Close the database connection
-        // await sql.close();
-
         // Return the result set as JSON
-        // return result.recordset;
+        return result.recordset;
     } catch (err) {
         // Handle errors
         console.error('Error occurred:', err);
@@ -193,12 +189,14 @@ const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
     finally{
         await clientPool.close();
     }
-    return await result.recordset;
+    // return await result.recordset;
 }
 
 // //Get SQL functionality
 const getDataByType = async(tyepData,params) => {
-    console.log('type of data........    '+tyepData);
+    // console.log('type of data........    '+tyepData);
+    // console.log('data........    '+JSON.stringify(params));
+    let results;
 
     switch(tyepData){
         case 'CA':
@@ -226,7 +224,7 @@ const getDataByType = async(tyepData,params) => {
             return executeStoredProcedure('uspGetSpecialOfferAsJSON');
             break;
         case 'SODR':
-            return executeStoredProcedure('uspGetSpecialOfferByDateRangeAsJSON', { startdate: startdate, enddate: enddate });
+            results = await executeStoredProcedure('uspGetSpecialOfferByDateRangeAsJSON', {StartDate:params.StartDate,EndDate: params.EndDate });
             break;
         case 'SOBD':
             return executeStoredProcedure('uspGetSpecialOffersByDate', { date });
@@ -298,6 +296,7 @@ const getDataByType = async(tyepData,params) => {
         default:
             break;
     }
+    return results;
 }
 
 // //Insert SQL funtionality
@@ -311,14 +310,14 @@ const insertObjectToSql = async(typeData,object) => {
     try{
         const id = await getId('CQ');
 
-        console.log('THERE IS AN ID PRESENT               \n'+id);
+        // console.log('THERE IS AN ID PRESENT               \n'+id);
         
         if(id > 0)
         {
             return 'There is  already a record for this item';
         }
         else{
-            console.log('NO ID IS PRESENT SO WE ARE INSERTING DATA \n');
+            // console.log('NO ID IS PRESENT SO WE ARE INSERTING DATA \n');
             switch(typeData)
             {
                 case 'IBI':
@@ -401,7 +400,7 @@ const insertObjectToSql = async(typeData,object) => {
                     // console.log('THe request object...........              \n'+request);
                     result = await request.execute('uspInsertIntoQuoteInformation');
                     Id = result.recordsets[0][0].Id;
-console.log("THIS IS HTE ID    \n"+Id);
+// console.log("THIS IS HTE ID    \n"+Id);
                     break;
                 default:
                     break;
@@ -472,6 +471,20 @@ const logLogData = async(log) => {
     return await result.recordsets[0][0];
 }
 
+const insertVisit = async(IPAddress,PageVisited) => {
+    await adminPool.connect()
+    const request = await adminPool.request();
+    try {
+        request.input('PageVisited', sql.VarChar(255), PageVisited);
+        request.input('IPAddress', sql.VarChar(50), IPAddress);
+
+        result  = await request.execute('uspInsertWebSiteVisit');
+        // console.log(result.recordsets[0][0].LogId);
+    } catch (error) {
+        console.log('Error in inserting visit   \n'+error);
+    }
+
+}
 
 module.exports = {
     getClient,
@@ -480,5 +493,6 @@ module.exports = {
     getDataByType,
     insertObjectToSql,
     updateSqlObject,
-    logLogData
+    logLogData,
+    insertVisit
 }

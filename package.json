@@ -1,11 +1,12 @@
 {
   "name": "candlenterprises",
   "version": "1.0.0",
-  "description": "Company site for services.",
-  "main": "index.js",
+  "description": "C&L Enterprises company site for services.",
+  "main": "app.js",
   "scripts": {
     "start": "set DEBUG=* & nodemon app.js",
-    "test": "mocha --timeout 3200000"
+    "test": "mocha --timeout 3200000",
+    "build-prod": "index.html"
   },
   "repository": {
     "type": "git",
@@ -13,18 +14,20 @@
     "username": "Clay Hughes",
     "email": "clayhughes1113@gmail.com"
   },
-  "author": "Clay Hughes",
+  "author": "C&L Entperprises",
   "license": "ISC",
   "nodemonConfig": {
     "restartable": "rs",
     "delay": 2500
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "canvas": "^2.11.2",
     "chart.js": "^3.5.1",
     "chartjs-node-canvas": "^4.1.6",
     "cookie-parser": "^1.4.6",
     "csv-parser": "^3.0.0",
+    "dns": "^0.2.2",
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "express-session": "^1.18.0",
@@ -32,18 +35,27 @@
     "instagram-private-api": "^1.46.1",
     "morgan": "^1.10.0",
     "mssql": "^10.0.2",
+    "net-browserify": "^0.2.4",
     "node-fetch": "^3.3.2",
     "nodemailer": "^6.9.11",
     "passport": "^0.7.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
-    "passport-session": "^1.0.2"
+    "passport-session": "^1.0.2",
+    "request": "^2.79.0",
+    "stream-browserify": "^3.0.0",
+    "tls": "^0.0.1",
+    "url": "^0.11.3",
+    "util": "^0.12.5"
   },
   "devDependencies": {
     "axios": "^1.6.8",
+    "eslint": "^8.3.0",
     "install": "^0.13.0",
     "mocha": "^10.4.0",
-    "npm": "^10.5.0"
+    "npm": "^10.5.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^5.1.4"
   }
 }

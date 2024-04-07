@@ -20,10 +20,10 @@ const options = {
 describe('API Tests', function () {
     this.timeout(320000);
     // Number of concurrent requests
-    const concurrency = 10;
+    const concurrency = 100;
 
      //Home Page Get Test
-    tstHomeGet(concurrency);
+    // tstHomeGet(concurrency);
 
     //Qoute Post Test
     // tstQRSubmit(concurrency);
@@ -37,6 +37,8 @@ describe('API Tests', function () {
     //POST Asitance Request
     // tstRHPost(concurrency);
 
+    //POST Visits
+    postVisit(concurrency);
 });
 
 // Function to write data to a CSV file
@@ -366,3 +368,51 @@ function tstRHPost(concurrency)
     });
 }
 
+function postVisit(concurrency){
+    it('Post requst asistance data to DB', async function (done) {
+        // Create an array to store promises for concurrent requests
+        const requests = [];
+        console.log('STARTING TEST.................   \n');
+        for (let i = 0; i <= concurrency; i++) {
+            console.log('FOOOOOOOOOOOOOR .................   \n');
+
+            const startTime = performance.now();
+            const requestPromise = new Promise((resolve, reject) => {
+                axios.post('http://localhost:4000/api/postVisit')
+                    .then(response => {
+                        console.log('RESPONSE   \n'+response);
+                        const endTime = performance.now();
+                        // Calculate the round-trip time in milliseconds
+                        const roundTripTime = endTime - startTime;
+                        
+                        const responseData = {
+                            responseUrl: response.request.res.responseUrl,
+                            data: response,
+                            roundtrip: roundTripTime, // Round-trip time in milliseconds
+                            requestBodyLength: '8',
+                            method:'POST',
+                            path:'api/postVisit',  // Request body length
+                            status: response.status,
+                            timestamp: new Date().toLocaleString('en-US', options)
+                        };
+    
+                        //Write some response data to a csv file for testing purposes
+                        writeToCSV({ ...responseData});
+    
+                        // Resolve the promise with the response
+                        resolve(response);
+                    }).catch(error => {
+                        console.log("ERROR \n"+error);
+                        // Reject the promise with the error
+                        reject(error);
+                    });           
+                });
+        
+            requests.push(requestPromise);
+
+        }
+        const responses = await Promise.all(requests).then((done) => {
+            done();
+        });;
+    });
+}

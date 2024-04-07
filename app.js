@@ -19,7 +19,7 @@ const LocalStrategy    = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
 const cookieParser = require('cookie-parser');
 const { truncate } = require('fs');
-const ch = require('./src/services/charting');
+const ch = require('./src/services/charting.js');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const dbOps    = require('./data/dbOps');
 
@@ -104,25 +104,40 @@ app.get('/logout', (req, res) => {
 });
 
 app.get('/',function(req,res){
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.render('admin.html');
 });
 
 app.get('/admin/',function(req,res){
     console.log('here....................');
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.redirect('dashboard.html');
 });
 
 app.get('/clientportal',function(req,res){
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.render('clientportal.html');
 });
 
 app.get('/', (req, res) => {
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.redirect('admin/dashboard.html');
 });
 
 app.post('/api/validatelogin',function(req,res){
     const { userid, password} = req.body;
     console.log(userid+'    '+password);
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.redirect('/admin/dashboard.html');
 
 
@@ -135,6 +150,9 @@ app.post('/api/validatelogin',function(req,res){
 app.post('/api/clientlogin',function(req,res){
     const { userid, password} = req.body;
     console.log(userid+'    '+password);
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     res.redirect('/admin/dashboard.html');
 
 
@@ -146,6 +164,9 @@ app.post('/api/clientlogin',function(req,res){
 
 app.post('/api/passreset',function(req,res){
     const {useremail} = req.body;
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     console.log(userid+'    '+useremail);
     // res.redirect('/admin/dashboard.html');
 
@@ -171,6 +192,8 @@ app.get('/api/cookie',function(req, res){
     }
     fm.readVisits();
     // ch.getVisitsChart();
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
 
     return res.send('cookie has been set!');
 });
@@ -178,58 +201,53 @@ app.get('/api/cookie',function(req, res){
 app.get('/api/getchartdata?',function(req,results){
     let chartname = req.query.chartname;
     let visitsData = [];
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
 
-    switch(chartname){
-        case 'visits':
-        {
-            ch.getVisitsData().then(res => {
-                return res;
-            }).then((res) =>{
-                visitsData = res;
-                results.json(visitsData);
-            });
-        }
-        default: break;
-    }
+    // switch(chartname){
+    //     case 'visits':
+    //     {
+    //         ch.getVisitsData().then(res => {
+    //             return res;
+    //         }).then((res) =>{
+    //             visitsData = res;
+    //             results.json(visitsData);
+    //         });
+    //     }
+    //     default: break;
+    // }
 });
 
 app.get('/api/getquotedata',function(req,response){
     let qouteData = [];
 
-    const  requestData =
-    {
-        Timestamp: new Date(),
-        IPAddress: req.ip, // Get IP address of the client
-        RequestURL: req.url,
-        HttpMethod: req.method,
-        StatusCode: req.statusCode,
-        ResponseSize: req.ResponseSize,
-        UserAgent: req.get('user-agent'), // Get user-agent header
-        Referer: req.get('referer'), // Get referer header
-        ErrorMsg: "",
-        QueryString: req.body
-    };
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     
-    ch.getQuoteData().then(res => {
-        return res;
-    }).then((res) =>{
-        qouteData = res;
-    }).then(() => {
-        dbOps.logLogData(requestData)
-        .then(() => {
-            response.json(qouteData);
-        });
-    });
+    // ch.getQuoteData().then(res => {
+    //     return res;
+    // }).then((res) =>{
+    //     qouteData = res;
+    // }).then(() => {
+    //     dbOps.logLogData(requestData)
+    //     .then(() => {
+    //         response.json(qouteData);
+    //     });
+    // });
 });
 
 app.get('/api/freeservicedata',function(req,results){
     let freeserv = [];
-    ch.getFreeServiceData().then(res => {
-        return res;
-    }).then((res) =>{
-        freeserv = res;
-        results.json(freeserv);
-    });
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
+    // ch.getFreeServiceData().then(res => {
+    //     return res;
+    // }).then((res) =>{
+    //     freeserv = res;
+    //     results.json(freeserv);
+    // });
 });
 
 app.post('/api/submitquoterequest',async(req,response) => {
@@ -242,19 +260,20 @@ app.post('/api/submitquoterequest',async(req,response) => {
 
     try {
 
-    const  requestData =
-    {
-        Timestamp: new Date(),
-        IPAddress: req.ip, // Get IP address of the client
-        RequestURL: req.url,
-        HttpMethod: req.method,
-        StatusCode: req.statusCode,
-        ResponseSize: req.ResponseSize,
-        UserAgent: req.get('user-agent'), // Get user-agent header
-        Referer: req.get('referer'), // Get referer header
-        ErrorMsg: "",
-        QueryString: req.body
-    };
+    const  requestData = createLogObj(req);
+    //  =
+    // {
+    //     Timestamp: new Date(),
+    //     IPAddress: req.ip, // Get IP address of the client
+    //     RequestURL: req.url,
+    //     HttpMethod: req.method,
+    //     StatusCode: req.statusCode,
+    //     ResponseSize: req.ResponseSize,
+    //     UserAgent: req.get('user-agent'), // Get user-agent header
+    //     Referer: req.get('referer'), // Get referer header
+    //     ErrorMsg: "",
+    //     QueryString: req.body
+    // };
 
     const qouteObj = {
         "ServiceTypeId": qservType,
@@ -308,19 +327,7 @@ app.post('/api/requsthelp',function(req,response){
     const {hDesc,hCompName,hFirst,hLast,hEmail,hPhone,hExt}= req.body;
     let msg = [{message:'Your request for assistance has been sent. You shold recieve an email from us soon..  '}];
 
-    const  requestData =
-    {
-        Timestamp: new Date(),
-        IPAddress: req.ip, // Get IP address of the client
-        RequestURL: req.url,
-        HttpMethod: req.method,
-        StatusCode: req.statusCode,
-        ResponseSize: req.ResponseSize,
-        UserAgent: req.get('user-agent'), // Get user-agent header
-        Referer: req.get('referer'), // Get referer header
-        ErrorMsg: "",
-        QueryString: req.body
-    };
+    const  requestData = createLogObj(req);
 
     let recip = {
         recipientName: hFirst +' '+ hLast
@@ -343,6 +350,7 @@ app.post('/api/registerfree',function(req,res) {
     let aClient;
     let subject = 'Free service applicant';
     let option = 'free';
+    const  requestData = createLogObj(req);
 
     const email = req.body.conemail
     const phone = req.body.conphone;
@@ -361,28 +369,44 @@ app.post('/api/registerfree',function(req,res) {
                 fm.writeToRegister(res);
               });
             }
+        }).then(() => {
+            dbOps.logLogData(requestData);
         });
     }catch(err){
         console.log('error    '+err);
     }
 });
 
-app.get('/api/instagram',function(req,res){
+app.get('/api/instagram',function(req,response){
     console.log('sending to instagram...............    '+req);
-    console.log('URL..................'+process.env.INSTAGRAM_URL);
-    res.redirect('https://www.instagram.com/socialcandl');
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData).then((res) =>{
+        response.redirect('https://www.instagram.com/socialcandl');
+    }).catch((err) => {
+        console.log("ERROR ..................  \n"+err);
+    });
 });
 
-app.get('/api/facebook',function(req,res){
+app.get('/api/facebook',function(req,response){
     console.log('sending to facebook...............    '+req);
     console.log('URL..................'+process.env.INSTAGRAM_URL);
-    res.redirect('https://www.facebook.com/socialcandlenterprises');
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData).then((res) =>{
+        response.redirect('https://www.facebook.com/socialcandlenterprises');
+    }).catch((err) => {
+        console.log("ERROR ..................  \n"+err);
+    });
 });
 
-app.get('/api/linkedin',function(req,res){
+app.get('/api/linkedin',function(req,response){
     console.log('sending to linkedin...............    '+req);
     console.log('URL..................'+process.env.INSTAGRAM_URL);
-    res.redirect('https://www.linkedin.com/company/c-l-enterprises-usa/');
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData).then((res) =>{
+        response.redirect('https://www.linkedin.com/company/c-l-enterprises-usa/');
+    }).catch((err) => {
+        console.log("ERROR ..................  \n"+err);
+    });
 });
 
 app.get('/error',(req,res) => res.send('Eror logging in to Facebook'));
@@ -390,9 +414,72 @@ app.get('/error',(req,res) => res.send('Eror logging in to Facebook'));
 //clientportal 
 app.get('/api/getdatarequest?',function(req,results){
     const id = req.query.id;
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
     console.log('id passed in header..........  '+id);
 
 });
+
+// Define API endpoint
+app.get('/api/check-date', async(req, response) => {
+    const startDate = new Date('2024-04-01');
+    const endDate = new Date('2024-08-01'); // August 1, 2024
+    let currentUTCDate = new Date(startDate.toISOString());
+    let isBeforeCutoff;
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
+    dbOps.getDataByType('SODR',{StartDate:startDate,EndDate:endDate})
+    .then((res) => {
+       return JSON.parse(res[0].SpecOfferByDate).map(item => item.OfferEndDate);
+    }).then((res) => { 
+        try {
+            if(res)
+            {
+                let convDate = new Date(res);
+                let expireDate = new Date(convDate.toISOString());
+                isBeforeCutoff = currentUTCDate < expireDate;
+                response.json(isBeforeCutoff);
+            }
+        } catch (error) {
+            console.log('ERROR HAS OCCURRED \n'+error);
+        }
+    }).catch((err) => {
+        console.log(err);
+    });
+});
+
+app.post('/api/postVisit', (req,response) => {
+    const ipAddress = req.ip; // Assuming the IP address is stored in req.ip property
+    const pageVisited = req.url;
+    // Call the dbOps.insertVisit function with the calling IP address
+    const  requestData = createLogObj(req);
+    dbOps.logLogData(requestData);
+
+    dbOps.insertVisit(ipAddress,pageVisited).then((res)=>{
+        response.status(200).json({ success: true, message: 'Visit recorded successfully.' });
+    }).catch((err) => {
+        console.log('ERROR OCCURRED IN FUNCTION CALL  \n'+err);
+    });
+});
+
+function createLogObj(req){
+    const  requestData =
+    {
+        Timestamp: new Date(),
+        IPAddress: req.ip, // Get IP address of the client
+        RequestURL: req.url,
+        HttpMethod: req.method,
+        StatusCode: req.statusCode,
+        ResponseSize: req.ResponseSize,
+        UserAgent: req.get('user-agent'), // Get user-agent header
+        Referer: req.get('referer'), // Get referer header
+        ErrorMsg: "",
+        QueryString: req.body
+    };
+    return requestData;
+}
 
 app.listen(PORT, () =>{
     debug('listening on port ${PORT}')
