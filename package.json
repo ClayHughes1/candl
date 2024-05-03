@@ -21,6 +21,7 @@
     "delay": 2500
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "buffer": "^6.0.3",
     "canvas": "^2.11.2",
     "chart.js": "^3.5.1",
@@ -43,6 +44,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "passport-session": "^1.0.2",
+    "paypal-rest-sdk": "^1.8.1",
     "request": "^2.79.0",
     "stream-browserify": "^3.0.0",
     "tls": "^0.0.1",

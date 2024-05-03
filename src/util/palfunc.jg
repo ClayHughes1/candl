@@ -1,0 +1,49 @@
+require('dotenv').config();
+const paypal = require('paypal-rest-sdk');
+
+
+const confiAccount = async() => {
+
+
+}
+
+// Create a payment
+const createPayment = async(intent,payer,amount) => {
+    const payment = {
+        intent: 'sale',
+        payer: {
+            payment_method: 'paypal'
+        },
+        transactions: [{
+            amount: {
+                total: '10.00', // Total amount of the payment
+                currency: 'USD' // Currency code
+            },
+            description: 'Payment for services'
+        }],
+        redirect_urls: {
+            return_url: 'http://localhost:3000/success', // URL to redirect to after successful payment
+            cancel_url: 'http://localhost:3000/cancel' // URL to redirect to after payment cancellation
+        }
+    };
+
+    paypal.payment.create(payment, (error, payment) => {
+        if (error) {
+            console.error(error);
+            throw error;
+        } else {
+            // Redirect the user to the PayPal approval URL
+            for (let i = 0; i < payment.links.length; i++) {
+                if (payment.links[i].rel === 'approval_url') {
+                    console.log(payment.links[i].href);
+                    // Redirect the user to payment.links[i].href
+                    break;
+                }
+            }
+        }
+    });
+};
+
+module.exports = {
+    createPayment
+}

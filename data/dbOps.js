@@ -2,6 +2,7 @@
 const clientConfig               = require('./dbConfig').clientConfig;
 const adminConfig                = require('./dbConfig').adminConfig;
 const sql = require('mssql');
+const bcrypt = require('bcrypt');
 
 let contactId;
 let CustomerAddressId;
@@ -159,23 +160,17 @@ const getClientsAsJSON = async() =>{
 
 // Async function to execute stored procedure and return JSON
 const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
-    console.log('params........   '+JSON.stringify(params));
     await clientPool.connect();
     const request = clientPool.request();
 
     try {
-        // Connect to the database
-        // await sql.connect(clientDbConfig);
-        // Create a new request object
-        // const request = new sql.Request();
-
         // Add parameters to the request
         if(params){
             for (const paramName in params) {
                 request.input(paramName, params[paramName]);
             }
         }
-
+// console.log(request);
         // Execute the stored procedure
         const result = await request.execute(storedProcedureName);
 
@@ -235,6 +230,9 @@ const getDataByType = async(tyepData,params) => {
         case 'BI':
             return executeStoredProcedure('uspGetBillingInvoiceAsJSON');
             break;
+        case 'BINF':
+            return executeStoredProcedure('uspGetClientBillingInfoById', params);
+            break;
         case 'BICI':
             return executeStoredProcedure('uspGetBillingInvoiceByClientID', params);
             //{ clientid: clientid }
@@ -252,7 +250,7 @@ const getDataByType = async(tyepData,params) => {
             return executeStoredProcedure('uspGetBillingInvoicesByPaymentStatusID', { statusid: statusid });
             break;
         case 'CBID':
-            return executeStoredProcedure('uspGetClientByIdAsJSON', { Id: Id });
+            return executeStoredProcedure('uspGetClientByIdAsJSON', params);
             break;
         case 'CC':
             return executeStoredProcedure('uspGetClientContactAsJSON');
@@ -293,6 +291,15 @@ const getDataByType = async(tyepData,params) => {
         case 'CSOBOID':
             return executeStoredProcedure('uspGetClientSpecialOfferByOfferIdAsJSON', { offerid: offerid });
             break;
+        case 'CPBCID':
+            return executeStoredProcedure('upsGetClientProfileById', params);
+            break;
+        case 'COU':
+            return executeStoredProcedure('uspGetCountryCodesAsJSON');
+            break;
+        case 'CBE':
+            return executeStoredProcedure('uspGetClientIdByEmail',params);
+            break;
         default:
             break;
     }
@@ -301,7 +308,7 @@ const getDataByType = async(tyepData,params) => {
 
 // //Insert SQL funtionality
 const insertObjectToSql = async(typeData,object) => {
-    await clientPool.connect()
+    await clientPool.connect();
     // Connect to the database
     const request = await clientPool.request();
 
@@ -421,8 +428,128 @@ const insertObjectToSql = async(typeData,object) => {
     // return await result.recordsets[0][0];
 }
 
-const updateSqlObject = async() => {
+const insertAccountDetail = async(frnData) => {
+    await clientPool.connect();
+    // Connect to the database
+    const request = await clientPool.request();
+    console.log('INSERTING ACCOUNT DETAILS \n'+JSON.stringify(frnData));
 
+    try {
+        // Add input parameters for each value
+        request.input('FirstName', sql.NVarChar(50), frnData.cfirstName);
+        request.input('LastName', sql.NVarChar(50), frnData.clastName);
+        request.input('CompanyName', sql.NVarChar(100), frnData.ccompanyname);
+        request.input('EmailAddress', sql.NVarChar(100), frnData.cemailaddress);
+        request.input('BusinessPhone', sql.NVarChar(20), frnData.cbusinessphone);
+        request.input('PersonalPhone', sql.NVarChar(20), frnData.cpersonalphone);
+        request.input('CellPhone', sql.NVarChar(20), frnData.ccellphone);
+        request.input('ContactPreference', sql.NVarChar(50), frnData.cpref);
+        request.input('Extension', sql.NVarChar(10), frnData.cextension);
+        request.input('AddressLine1', sql.NVarChar(100), frnData.caddressline1);
+        request.input('AddressLine2', sql.NVarChar(100), frnData.caddressline2);
+        request.input('City', sql.NVarChar(50), frnData.ccity);
+        request.input('State', sql.NVarChar(50), frnData.cstate);
+        request.input('ZipCode', sql.NVarChar(20), frnData.czipcode);
+        request.input('CountryCodeId', sql.Int, frnData.ccountry);
+        request.input('ClientLogId', sql.Int, frnData.clientId);
+
+        const result = await request.execute('uspInsertClientAndContactDetails');
+        console.log('RESULTS FROM INSERTING CLIENT ACCOUNT DETAIL \n'+result.recordset.map(item => item.Id));
+
+        return result.recordset.map(item => item.Id);
+    } catch (error) {
+        console.log('ERROR INSERTING ACCOUNT DATA \n'+error);
+    }
+}
+
+const updateSqlObject = async(type,params) => {
+    let results;
+    try {
+
+    } catch (error) {
+        
+    }
+
+}
+
+const resetPass = async(username, newpass) => {
+    await clientPool.connect();
+    // Connect to the database
+    const request = await clientPool.request();
+
+    try {
+        // let resJson = await request.query`EXEC uspGetClientPasswordByUserName @username = ${username}`;
+        // let oldPass = JSON.parse(resJson.recordsets[0][0].ClientPass).map(item => item.userPassword);
+
+        const encryptedPassword = await encryptPassword(newpass);
+        console.log('ENCRYPTED PASS     \n'+encryptedPassword);
+        
+        request.input('UserEmail', sql.VarChar, username);
+        request.input('NewUserPassword', sql.VarChar, encryptedPassword);
+        const result = await request.execute('uspUpdateClientLoginPassByEmail');
+        console.log('RESULTS     \n'+JSON.stringify(result));
+        return result.recordsets[0][0].ID; 
+    } catch (error) {
+        console.log('ERROR     \n'+error);
+    }
+
+}
+
+const getClientPassword = async(email) => {
+    await clientPool.connect();
+    // Connect to the database
+    let request = await clientPool.request();
+
+    try {
+        request.input('username', sql.VarChar, email);
+        const result = await request.execute('uspGetClientPasswordByUserName');
+        return JSON.parse(result.recordsets[0][0].ClientPass).map(item => item.userPassword);
+    } catch (error) {
+        console.log('ERROR                \n'+error);
+    }
+}
+
+const insertClientLogin = async(username,password) => {
+    await clientPool.connect();
+    // Connect to the database
+    const request = await clientPool.request();
+    try{
+        const encryptedPassword = await encryptPassword(password);
+console.log('ENCRYPTED PASS     \n'+encryptedPassword);
+        request.input('username', sql.VarChar, username);
+        request.input('userpassword', sql.VarChar, encryptedPassword);
+        const result = await request.execute('uspInsertIntoClientLogin');
+        // console.log(`User ${Id} inserted successfully.`);
+        //res[0].SpecOfferByDate).map(item => item.OfferEndDate);
+        console.log(result.recordset.map(item => item.Id));
+        return result.recordset.map(item => item.Id);
+    } catch (error) {
+        console.error('Error inserting user:', error);
+    }
+}
+
+const authenticateUser = async(username,password) => {
+    console.log(username+'              '+password);
+    await clientPool.connect();
+    // Connect to the database
+    const request = await clientPool.request();
+    try {
+        request.input('username', sql.VarChar, username);
+        const result = await request.execute('uspGetClientPasswordByUserName');
+        const passJson = JSON.parse(result.recordsets[0][0].ClientPass).map(item => item.userPassword);
+        if (result.recordset.length === 0) {
+            return false; // User not found
+        }
+
+        const encryptedPassword = passJson.toString().trim();
+        const isMatch = await decryptPassword(encryptedPassword, password.trim());
+        if(isMatch){
+            return getClientIdByEmail(username);
+        }
+    } catch (error) {
+        console.error('Error authenticating user:', error);
+        return 0;
+    }
 }
 
 // //Admin db operations
@@ -486,13 +613,47 @@ const insertVisit = async(IPAddress,PageVisited) => {
 
 }
 
+// Function to encrypt the password
+async function encryptPassword(password) {
+    const saltRounds = 10; // Number of salt rounds for bcrypt
+    return bcrypt.hash(password, saltRounds);
+}
+// Function to decrypt the password
+async function decryptPassword(encryptedPassword, userPassword) {
+    let answer = await bcrypt.compare(userPassword, encryptedPassword);
+    return answer;
+    //bcrypt.compare(userPassword, encryptedPassword);
+}
+
+async function getClientIdByEmail(username){
+    await clientPool.connect();
+    // Connect to the database
+    const request = await clientPool.request();
+    try {
+        request.input('email', sql.VarChar, username);
+        const result = await request.execute('uspGetClientIdByEmail');
+        const clientId = result.recordsets[0];
+        return JSON.stringify(clientId[0].ClientId);
+    } catch (error) {
+        console.error('Error authenticating user:', error);
+        return 0;
+    }
+}
+
 module.exports = {
+    authenticateUser,
+    decryptPassword,
+    encryptPassword,
     getClient,
     getAdmin,
     getClientsAsJSON,
     getDataByType,
+    getClientPassword,
     insertObjectToSql,
-    updateSqlObject,
+    insertVisit,
+    insertClientLogin,
+    insertAccountDetail,
     logLogData,
-    insertVisit
+    resetPass,
+    updateSqlObject
 }

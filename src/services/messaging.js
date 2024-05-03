@@ -1,6 +1,7 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 const path = require('path');
+
 let htmlBody;
 
 //create html body section 
@@ -53,6 +54,71 @@ const conEmailBody = async(rqstor) => {
 return confEmail;
 }
 
+const crspEmailBody = async(mssgParams,qouteId,type) => {
+  let compEmailBody = 
+  `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Project Inquiry Information ${type}: #${qouteId}</title>
+    </head>
+    <body>
+        <h2>Project Inquiry Details</h2>
+        <p><strong>Qoute Id:</strong> ${qouteId}</p>
+        <p><strong>Service Type:</strong> ${mssgParams.ServiceTypeId}</p>
+        <p><strong>Project Description:</strong> ${mssgParams.ProjectDescription}</p>
+        <p><strong>Estimated Cost:</strong> ${mssgParams.EstimatedCost}</p>
+        <p><strong>Additional Notes:</strong> ${mssgParams.AdditionalNotes}</p>
+        <hr>
+        <h3>Contact Information</h3>
+        <p><strong>Company Name:</strong> ${mssgParams.CompanyName}</p>
+        <p><strong>First Name:</strong> ${mssgParams.FirstName}</p>
+        <p><strong>Last Name:</strong> ${mssgParams.LastName}</p>
+        <p><strong>Email Address:</strong> ${mssgParams.EmailAddress}</p>
+        <p><strong>Business Phone:</strong> ${mssgParams.BusinessPhone}</p>
+        <p><strong>Contact Preference:</strong> ${mssgParams.ContactPreference}</p>
+        <p><strong>Extension:</strong> ${mssgParams.Extension}</p>
+    </body>
+    </html>
+  `;
+  return compEmailBody;
+}
+
+// "CompanyName": hCompName,
+// "FirstName": hFirst,
+// "LastName": hLast,
+// "EmailAddress": hEmail,
+// "BusinessPhone": hPhone,
+// "Extension":hExt,
+// "Description":hDesc,
+
+const crspEmailAssistBody = async(mssgParams,senderName) => {
+  let compEmailBody = 
+  `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Assistance requrest - ${senderName}</title>
+    </head>
+    <body>
+        <h3>Contact Information</h3>
+        <p><strong>Company Name:</strong> ${mssgParams.CompanyName}</p>
+        <p><strong>First Name:</strong> ${mssgParams.FirstName}</p>
+        <p><strong>Last Name:</strong> ${mssgParams.LastName}</p>
+        <p><strong>Email Address:</strong> ${mssgParams.EmailAddress}</p>
+        <p><strong>Business Phone:</strong> ${mssgParams.BusinessPhone}</p>
+        <p><strong>Extension:</strong> ${mssgParams.Extension}</p>
+        <p><strong>Extension:</strong> ${mssgParams.Description}</p>
+    </body>
+    </html>
+  `;
+  return compEmailBody;
+}
+
 // Create a transporter with your email service provider's SMTP settings
 const transporter = nodemailer.createTransport({
     service: 'gmail', // e.g., 'gmail'
@@ -65,7 +131,7 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-//Create emaikl body
+//Create email body
 const createBody = async(client) => {
   htmlBody = '<div><p>'+client.firstname+'</p><p>'+client.lastname+'</p><p>'+client.companyname+'</p><p>'+client.email+'</p><p>'+client.phone+'</p></div>';
   console.log('html body   '+htmlBody);
@@ -94,7 +160,7 @@ const sendQouteMail = async (emailTo) => {
     }
 };
 
-// Send assitance request cnofrimation email
+// Send assistance request cnofrimation email
 const sendConHelpEmail = async(emailTo,recipient) => {
   let emailBody = (await conEmailBody(recipient)).toString();
   try {
@@ -118,12 +184,58 @@ const sendConHelpEmail = async(emailTo,recipient) => {
   } catch (error) {
     console.error(`Error sending email: ${error.message}`);
   }
-
 };
+
+const sendEmailToCompAccount = async(inpValues,reqType,keyVal) => {
+  console.log('sending email to company account  \n'+JSON.stringify(inpValues));
+  console.log(keyVal);
+  let reqEmail = reqType === 'qoute'?await crspEmailBody(inpValues,keyVal,reqType):
+  await  crspEmailAssistBody(inpValues,reqType,keyVal);
+
+  console.log(reqEmail);
+  try{
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM, // Sender's email address
+      to: process.env.EMAIL_ADD, // Recipient's email address
+      subject: reqType, // Subject line
+      text: 'Client request type ${reqType}', // Plain text body
+      html: reqEmail,
+      attachments:[{
+        filename: 'C.jpg',
+        path: 'public/images/C.jpg',
+        contentType: 'application/jpg'
+      }]
+    });
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+
+}
+
+const sendPassReset = async(emailTo) => {
+  console.log('EMAIL RESET \n'+emailTo);
+  // Construct the reset password link with the recipient's email address
+  const resetPasswordLink = `http://localhost:4000/api/passreset?email=${emailTo}`;
+  const htmlBody = `<p>Hello,</p><p>Please click on the following link to reset your password:</p><a href="${resetPasswordLink}">Reset Password</a>` 
+
+  const info = await transporter.sendMail({
+    from: process.env.EMAIL_FROM, // Sender's email address
+    to: emailTo, // Recipient's email address
+    subject: 'Password Reset', // Subject line
+    text: 'You have requested to reset your password.', // Plain text body
+    html: htmlBody
+  }).catch((err) => {
+    console.log('ERROR       '+err);
+  });
+  console.log('INFO              \n'+JSON.stringify(info));
+
+}
 
 module.exports = {
   // sendMail,
   createBody,
   sendQouteMail,
-  sendConHelpEmail
+  sendConHelpEmail,
+  sendPassReset,
+  sendEmailToCompAccount
 };

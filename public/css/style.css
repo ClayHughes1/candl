@@ -322,6 +322,12 @@ only screen and (min-device-pixel-ratio : 1.5) {
   animation: disintegrate 2s ease-in-out forwards, snap 1s ease-in-out 1s forwards;
 }
 
+.scrollable-div {
+  /* width: 300px;  */
+  height: 300px; /* Set height as needed */
+  overflow: auto; /* Make the div scrollable */
+  /* border: 1px solid #ccc; Optional: Add a border for better visualization */
+}
 
 .pre-radio{
   height:15px;
@@ -347,9 +353,10 @@ only screen and (min-device-pixel-ratio : 1.5) {
   background-color: #808080;
   color: #000;
   border:none;
-border-radius: 20px;
+  border-radius: 20px;
 }
- .btnQuote:hover {
+
+.btnQuote:hover {
   color: #ffffff;
   background-color: #000000;
 }
@@ -421,6 +428,9 @@ margin-bottom: 5px;
 .p-5{
   padding: 5px;
 }
+.p-10{
+  padding: 10px;
+}
 .pad-0{
   padding: 0;
 }
@@ -439,6 +449,9 @@ margin-bottom: 5px;
 .pt-5{
   padding-top: 5px;
 }
+.p-1{
+  padding-top: 1px;
+}
 .fw-bold{
   font-weight: bold;
 }
@@ -453,8 +466,17 @@ margin-bottom: 5px;
 .ml-5p{
   margin-left: 5%;
 }
+.ml-5{
+  margin-left: 5px;
+}
+.ml-2{
+  margin-left: 2px;
+}
 .mr-5p{
   margin-left: 5%;
+}
+.mar-right-5-per{
+  margin-right: 5%;
 }
 .mr-5{
   margin-right: 5px;
@@ -474,6 +496,9 @@ margin-bottom: 5px;
 }
 .mb-5p{
   margin-bottom: 5%;
+}
+.mb-5{
+  margin-bottom: 5px;
 }
 .ml-12
 {
@@ -539,8 +564,11 @@ margin-bottom: 5px;
   right: 40px;
   font-size: 30px;
 }
-.fn-white{
+.fn-black{
   color: #000000;
+}
+.fn-white{
+  color: #ffffff;
 }
 .btn-adv{
   background-origin: inherit;
@@ -713,6 +741,7 @@ for home page services flip animation */
   background-color: #808080;
   font-size: 15px;
 }
+
 .back3{
   z-index: 1;
   backface-visibility: hidden;
@@ -782,3 +811,59 @@ for home page services flip animation */
 .dis-none{
   display: none;
 }
+
+/* Style the password input container */
+.password-input-container {
+  position: relative;
+}
+
+/* Style the eye icon */
+.password-input-container .eye-icon {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #000;
+  font-size: 25px;
+}
+
+/* Style the table */
+.bill-table table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.bill-table th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    width: 38%; /* Set the width of each column to 50% */
+}
+
+.bill-table th {
+    background-color: #f2f2f2;
+}
+
+.acct-table table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.acct-table th, td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  width: 5%; 
+  font-size: .75em;
+}
+
+.acct-table th {
+  background-color: #f2f2f2;
+}
+
+/* .paycheck{
+  display: none;
+}
+
+.paycard{
+  display: none;
+} */

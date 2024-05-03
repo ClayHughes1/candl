@@ -42,6 +42,7 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" media="all" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
 <script type="text/javascript" src="jscript/graph.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
 <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
 
@@ -59,7 +60,7 @@
                     <h6>C&L Enterprises</h6>
                 </div>
                 <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1 text-light" >
-                    <a class="btn" href="/logout" role="button" style="font-size:2em;">
+                    <a class="btn" href="/api/client/logout" role="button" style="font-size:2em;">
                         <i class="fa-regular fa-user"></i>
                     </a>
                 </div>
@@ -70,8 +71,14 @@
 
 <div class="container-fluid">
 
-    <!-- Bulleting section -->
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-light" style="padding:20px;">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-light">
+        <div class="row">
+          <h4>Client Portal</h4>  
+        </div>
+    </div>
+
+    <!-- Link section -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-light" id="divBltn" style="padding:20px;display: none;">
         <div class="row">
             <div class="cols-xs-12 col-sm-12 col-md-12 col-lg-8">
                 <h4>Client Portal</h4>
@@ -89,33 +96,60 @@
         <hr style="border-bottom: 3px solid lightblue;" />
     </div>
     
+    <!-- Greeting section -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-light hidden" id="greeting">
+        <div class="row">
+            <p>Welcome to your client portal. Here your can perform actions and view data related to your account</p>
+        </div>
+    </div>
+
+    <!-- Notification container -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 dis-none fn-black" id="divNotify">
+        <div class="alert alert-primary" role="alert">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-10 col-lg-10">
+                    <p id="pNotify"></p>
+                </div>
+                <div class="col-xs-2 col-sm-2 col-md-2 col-lg-1"> 
+                    <a href="#!" id="lnkDismiss">Dismiss</a>
+                </div>
+            </div>
+        </div>	
+    </div>
+
     <!-- Login section -->
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divLoggIn" style="margin-top: 100px;">
-        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
-            <form class="col-xs-12 col-sm-12 col-md-12 col-lg-12" method="post" action="api/clientlogin" id="frmLogin">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 mb-5p" id="divLogIn" style="margin-top: 100px;">
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+            <form class="col-xs-12 col-sm-12 col-md-12 col-lg-12" method="post" action="" id="frmLogin">
                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                     <div class="row mb-5p">
-                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-5">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-3">
                             <label for="useremail" class="col-form-label">Email:</label>
                         </div>
                         <div class="col-xs-8 col-sm-8 col-md-8 col-lg-7">
-                            <input class="form-control" type="email" id="useremail"  name="userid" aria-label="Admin user Id" placeholder="Email" required/>							
+                            <input class="form-control" type="email" id="useremail"  name="userid" aria-label="CLient user Id" placeholder="Email" required/>							
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-5">
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-3">
                             <label for="password" class="col-form-label">User Password:</label>
                         </div>
                         <div class="col-xs-8 col-sm-8 col-md-8 col-lg-7">
-                            <input class="form-control" type="password" id="userpassword"  name="userpassword" aria-label="Admin user password" placeholder="Password" required/>							
+                            <input class="form-control" type="password" id="userpassword"  name="userpassword" aria-label="Client user password" placeholder="Password" autocomplete="off" required/>							
                         </div>
                     </div>
-                    <div class="row" style="padding-top: 10px;">
-                        <div class="col-xs-10 col-sm-10 col-md-10 col-lg-10 text-right pb=1p">
+                    <div class="row" style="margin-top: 10px;">
+                        <!-- <div class="col-xs-2 col-sm-3 col-md-4 col-lg-4 pb-1p ml-12" style="background-color: orange;"></div> -->
+                        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 pb-1p text-right">
+                            <a href="#" id="lnkRegister" role="button">Create Account</a>
+                        </div>
+                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 pb-1p text-right">
                             <a href="#" id="lnkForgot" role="button">Forgot Password</a>
                         </div>
-                        <div class="col-xs-2 col-sm-2 col-md-2 col-lg-2 text-right">
-                            <button id="btnLogin" class="btn btn-primary" type="button">Login</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-10 col-sm-12 col-md-12 col-lg-12 text-right">
+                            <button id="btnLogin" class="btn btn-primary" type="submit">Login</button>
                         </div>
                     </div>
                 </div>
@@ -123,94 +157,741 @@
         </div>
     </div>
 
+    <!-- Create Account Section -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divCreateAccount" style="margin-top: 10px;margin-bottom: 20px;display: none;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divLoggIn" style="margin-top: 10px;">
+                <h7>Create Account</h7>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-6">
+            <form class="col-xs-12 col-sm-12 col-md-12 col-lg-12" method="post" action="" id="frmCreate">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="row mb-5p">
+                        <div class="col-xs-4 col-sm-5 col-md-6 col-lg-5">
+                            <label for="cemail" class="col-form-label">Email:</label>
+                        </div>
+                        <div class="col-xs-8 col-sm-7 col-md-6 col-lg-7">
+                            <input class="form-control" type="email" id="cemail"  name="cuserid" aria-label="User Id" placeholder="Email" required/>							
+                        </div>
+                    </div>
+                    <div class="row mb-5p">
+                        <div class="col-xs-4 col-sm-5 col-md-6 col-lg-5">
+                            <label for="cnfemail" class="col-form-label">Re-Enter Email:</label>
+                        </div>
+                        <div class="col-xs-8 col-sm-7 col-md-6 col-lg-7">
+                            <input class="form-control" type="email" id="cnfemail"  name="cnfemail" aria-label="Confirm email address" placeholder="Re-enter Email" required/>							
+                        </div>
+                    </div>
+                    <div class="row mb-5p">
+                        <div class="col-xs-4 col-sm-5 col-md-6 col-lg-5">
+                            <label for="password" class="col-form-label">Password:</label>
+                        </div>
+                        <div class="col-xs-8 col-sm-7 col-md-6 col-lg-7 password-input-container">
+                            <input class="form-control" type="password" id="cpass"  name="cpass" aria-label="User password" placeholder="Password" autocomplete="off" required/>							
+                            <i class="fas fa-eye eye-icon" id="togglePassword" onclick="togglePassword('cpass')"></i>
+                        </div>
+                    </div>
+                    <div class="row mb-5p">
+                        <div class="col-xs-4 col-sm-5 col-md-6 col-lg-5">
+                            <label for="password" class="col-form-label">Re-enter Password:</label>
+                        </div>
+                        <div class="col-xs-8 col-sm-7 col-md-6 col-lg-7 password-input-container">
+                            <input class="form-control" type="password" id="cpassre"  name="cnfpass" aria-label="User re-enter password" placeholder="Re-enter Password" autocomplete="off" required/>							
+                            <i class="fas fa-eye eye-icon" id="togglePassword2" onclick="togglePassword('cpassre')"></i>
+                        </div>
+                    </div>
+                    <div class="row mb-5p" id="divMsgPar" style="display: none;">
+
+                    </div>
+                    <div class="row" style="padding-top: 10px;">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right">
+                            <button id="btnCreate" class="btn btn-primary" type="button">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Company Information -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divComInfo" style="margin-top: 10px;margin-bottom: 20px;display: none;">
+        <form class="form fn-black"  id="frmAcc" method="post" action="">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="cfirstName" class="form-label fn-white">First Name</label>
+                <input type="text" class="form-control" id="cfirstName" name="cfirstName" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="clastName" class="form-label fn-white">Last Name</label>
+                <input type="text" class="form-control" id="clastName" name="clastName" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="ccompanyname" class="form-label fn-white">Company Name</label>
+                <input type="text" class="form-control" id="ccompanyname" name="ccompanyname"/>
+              </div>
+              <div class="col-md-6">
+                <label for="cemailaddress" class="form-label fn-white">Email Address</label>
+                <input type="text" class="form-control" id="cemailaddress" name="cemailaddress" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="cbusinessphone" class="form-label fn-white">Business Phone</label>
+                <input type="text" class="form-control" id="cbusinessphone" name="cbusinessphone" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="cpersonalphone" class="form-label fn-white">Personal Phone</label>
+                <input type="text" class="form-control" id="cpersonalphone" name="cpersonalhone"/>
+              </div>
+              <div class="col-md-6">
+                <label for="ccellphone" class="form-label fn-white">Cell Phone</label>
+                <input type="text" class="form-control" id="ccellphone" name="ccellphone"/>
+              </div>
+              <div class="col-md-6">
+                <label for="cextension" class="form-label fn-white">Extension</label>
+                <input type="text" class="form-control" id="cextension" name="cextension"/>
+              </div>
+              <div class="col-md-6">
+                <label for="slPreference" class="form-label fn-white">Contact Preference</label>
+                <select id="slPreference" class="form-control" name="cpref">
+                    <option value="0">Select</option>
+                    <option value="email">Email</option>
+                    <option value="phone">Phone</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="caddressline1" class="form-label fn-white">Address Line 1</label>
+                <input type="text" class="form-control" id="caddressline1" name="caddressline1" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="caddressline2" class="form-label fn-white">Address Line 2</label>
+                <input type="text" class="form-control" id="caddressline2" name="caddressline2">
+              </div>
+              <div class="col-md-6">
+                <label for="ccity" class="form-label fn-white">City</label>
+                <input type="text" class="form-control" id="ccity" name="ccity" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="cstate" class="form-label fn-white">State</label>
+                <input type="text" class="form-control" id="cstate" name="cstate" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="czipcode" class="form-label fn-white">Zip Code</label>
+                <input type="text" class="form-control" id="czipcode" name="czipcode" required/>
+              </div>
+              <div class="col-md-6">
+                <label for="countrySelect" class="form-label fn-white">Country</label>
+                <select id="countrySelect" class="form-control" name="ccountry" required/>
+                    <option value="0">Select</option>
+                </select>
+              </div>
+              <input type="hidden" id="hdId" value="NULL" name="clientlogId">
+            </div>
+            <button type="button" id="btnSaveAccDetail" class="btn btn-success mt-3">Save</button>
+          </form>
+    </div>
+
     <!-- Reset account Login  --> 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divReset" style="display: none;"> 
-        <h4>Reset Password</h4>
-        <form class="col-xs-12 col-sm-12 col-md-12 col-lg-12" method="post" action="api/passreset" id="frmLogin">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="divReset" style="display: none;margin-bottom: 20px;"> 
+        <h7>Reset Password</h7>
+        <form class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="frmResetPass">
             <div class="row mb-5p">
-                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-5">
+                <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2">
                     <label for="rstUser" class="col-form-label">Email:</label>
                 </div>
-                <div class="col-xs-8 col-sm-8 col-md-8 col-lg-7">
+                <div class="col-xs-12 col-sm-7 col-md-7 col-lg-5 pb-1">
                     <input class="form-control" type="email" id="rstUser"  name="useremail" aria-label="Admin user Id" placeholder="Email" required/>							
                 </div>
-            </div>
-            <div class="row" style="padding-top: 10px;">
-                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right">
-                    <button id="btnReset" class="btn btn-primary" type="button">Login</button>
+                <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2 text-right">
+                    <button id="btnReset" class="btn btn-primary" type="button">Send</button>
                 </div>
             </div>
         </form>
     </div>
 
     <!-- Maintenance section -->
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="profile" style="display: none;">
+    <!-- Profile  -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 client mb-2 fn-black" id="profile" style="padding: 5px;">
         <div class="row">
-            <h4>Profile</h4>
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 fn-white">
+                <h4>Profile Details</h4>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12 col-0sm-12 col-md-12 col-lg-12 fn-black p-10" style="background-color: #ffffff;margin: 12px;">
+                <form class="form fn-black p-10"  id="editForm">
+                    <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="firstName" class="form-label">First Name</label>
+                        <input type="text" class="form-control p-field" id="firstName" name="firstName" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Last Name</label>
+                        <input type="text" class="form-control p-field" id="lastName" name="lastName" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Company Name</label>
+                        <input type="text" class="form-control p-field" id="companyname" name="companyname" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Email Address</label>
+                        <input type="text" class="form-control p-field" id="emailaddress" name="emailaddress" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Business Phone</label>
+                        <input type="text" class="form-control p-field" id="businessphone" name="businessphone" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Personal Phone</label>
+                        <input type="text" class="form-control p-field" id="personalhone" name="personalhone" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Cell Phone</label>
+                        <input type="text" class="form-control p-field" id="cellphone" name="cellphone" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Contact Preference</label>
+                        <input type="text" class="form-control p-field" id="contactpreference" name="contactpreference" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Extension</label>
+                        <input type="text" class="form-control p-field" id="extension" name="extension" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Address Line1</label>
+                        <input type="text" class="form-control p-field" id="addressline1" name="addressline1" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Address Line2</label>
+                        <input type="text" class="form-control p-field" id="addressline2" name="addressline2" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">City</label>
+                        <input type="text" class="form-control p-field" id="city" name="city" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">State</label>
+                        <input type="text" class="form-control p-field" id="state" name="state" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Zip Code</label>
+                        <input type="text" class="form-control p-field" id="zipcode" name="zipcode" readonly>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="lastName" class="form-label">Country</label>
+                        <input type="text" class="form-control p-field" id="countryname" name="countryname" readonly>
+                    </div>
+                    <!-- Add more input fields here -->
+                    </div>
+                    <button type="button" id="editButton" class="btn btn-primary mt-3">Edit</button>
+                    <button type="submit" id="saveButton" class="btn btn-success mt-3" style="display: none;">Save</button>
+                </form>
+            </div>
+        </div>
+        <hr style="border-bottom: 3px solid lightblue;" />
+
+    </div>
+
+    <!-- Invoice Data -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 client mb-2 fn-white" id="account" style="padding: 5px;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
+                <h4>Invoice Details</h4>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-10">
+                <p id="curMonth"></p>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 client fn-black scrollable-div" id="divInv" style="background-color: #ffffff;">
+            <!-- HTML table to display JSON values -->
+            
+            
+            
+            
+            
+            <!-- <table class="table table-hover table-sm acct-table table-striped" id="invDetail">
+                <thead>
+                    <tr>
+                        <th colspan="1" scope="col">Company Name</th>
+                    </tr>
+                    <tr>
+                        <td id="tdCompanyName">
+                            <input type="text" class="form-control b-detail" id="CompanyName" placeholder="Credit Card #" readonly>
+                        </td>
+                    </tr>
+                </thead>
+                <tbody class="table-sm">
+                    <tr>
+                        <th scope="col">Invoice #</th>
+                        <th>Invoice Date</th>
+                        <th>Due Date</th>
+                        <th>Payment Date</th>
+                        <th>Last Payment</th>
+                        <th>Current Balance</th>
+                        <th>Status</th>
+                        <th>Notes</th>
+                        <th></th>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td id="tdEdit"><button type="button" id="bEditBtn" class="btn btn-primary mt-3">Edit</button></td>
+                        <td><button type="submit" id="bSaveBtn" class="btn btn-success mt-3" style="display: none;">Save</button></td>
+                    </tr> 
+                </tfoot>
+            </table> -->
+        </div>
+        <hr style="border-bottom: 3px solid lightblue;" />
+
+    </div>
+
+    <!-- Billing Account Detail  -->
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 client mb-2 fn-white" id="billing" style="padding: 5px;">
+        <div class="row">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                <h4>Payment Details</h4>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 client fn-black" style="background-color: #ffffff;">
+            <!-- HTML table to display JSON values -->
+            <table class="table bill-table" id="jsonData">
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <th colspan="1" scope="col">First Name</th>
+                        <th colspan="1" scope="col">Last Name</th>
+                        <th colspan="2" scope="col">Company Name</th>
+                    </tr>
+                    <tr>
+                        <td colspan="1"><input type="text" class="form-control b-detail" id="FirstName" placeholder="First Name" readonly></td>
+                        <td colspan="1"><input type="text" class="form-control b-detail" id="LastName" placeholder="Last Name" readonly></td>
+                        <td colspan="1"><input type="text" class="form-control b-detail" id="CompanyName" placeholder="Company Name" readonly></td>
+                    </tr>
+                    <tr>
+                        <th colspan="1" scope="col">Card #</th>
+                        <th colspan="1" scope="col">Expiry Date</th>
+                        <th colspan="2" scope="col">CVV</th>
+                    </tr>
+                    <tr>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdCreditCardNumber" placeholder="Credit Card #" readonly>
+                            <input type="hidden" id="fullCard">
+                        </td>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdExpiryDate" placeholder="Expiry Date MM/YYYY" maxlength="7" readonly>
+                        </td>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdCVV" placeholder="CVV" readonly>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="1" scope="col">Address</th>
+                        <th colspan="1" scope="col">City</th>
+                        <th colspan="2" scope="col">State</th>
+                    </tr>
+                    <tr>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdBillingAddress" placeholder="Billing Address" readonly>
+                        </td>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdBillingCity" placeholder="Billing City" readonly>
+                        </td>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdBillingState" placeholder="Billing State" readonly>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th colspan="1" scope="col">Zip Code</th>
+                    </tr>
+                    <tr>
+                        <td colspan="1">
+                            <input type="text" class="form-control b-detail" id="bdBillingZipCode" placeholder="Billing Zip Code" readonly>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td id="tdEdit"><button type="button" id="bEditBtn" class="btn btn-primary mt-3">Edit</button></td>
+                        <td><button type="submit" id="bSaveBtn" class="btn btn-success mt-3" style="display: none;">Save</button></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
     </div>
 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="account" style="display: none;">
-        <div class="row">
-            <h4>Account</h4>
+    <!-- Pay Invoice -->
+    <div class="modal text-dark" tabindex="-1" id="payModal" role="dialog" style="width: 100%;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content bg-img-body-lite text-white">
+                <div class="modal-header bg-light text-dark" style="margin-bottom: 0;">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <h5>Payment Form</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body text-dark bg-light" style="height: auto;">
+                    <div  class="row" style="display: none;">
+                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-left">
+                            <p id="frmMssg"></p>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div class="row mb-5">
+                            <div class="col-xs-5 col-sm-5 col-md-4 col-lg-4">
+                                <label for="payType" class="form-label">Payment Type:</label>
+                            </div>
+                            <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">
+                                <select class="form-control" id="payType" name="payType" aria-label="Payment type select list">
+                                    <option value="select" selected>Select</option>
+                                    <option value="credit">Credit Card</option>
+                                    <option value="debit">Debit Card</option>
+                                    <option value="checking">Checking</option>
+                                    <option value="busacct">Business Account</option>
+                                    <option value="paypal">PayPal</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="frmBank" style="display: none;">
+                        <form class="form" method="post" action="/api/submitpayment">
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctName" class="form-label">First Name:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctFirNameBank" name="acctFirNameBank" placeholder="First name on account" requred/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctName" class="form-label">Last Name:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctLastNameBank" name="acctLastNameBank" placeholder="Last name on account" requred/>
+                                </div>
+                            </div>
+                            <!-- Check/Wire trnasfer payment -->
+                            <div class="row paycheck p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label id="acctInst" for="acctNum" class="form-label">Institute  Name:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctInst" name="acctInst" placeholder="Account or card number" requred/>
+                                </div>
+                            </div>
+                            <div class="row paycheck p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctNum" class="form-label">Account Number:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctNum" name="acctNum" placeholder="Account number" requred/>
+                                </div>
+                            </div>
+                            <div class="row paycheck p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctRtNum" class="form-label">Routing Number:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctRtNum" name="acctRtNum" placeholder="Routing number" requred/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="payAmtBank" class="form-label">Amount $:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="payAmtBank" name="payAmt" placeholder="Pay Amount" requred/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right">
+                                    <button type="button" id="btnPayBank" class="btn btn-primary mt-3 b-check b-pay">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="frmCredit" style="display: none;">
+                        <form class="form" method="post" action="/api/submitpayment">
+                            <div class="row p-1">
+                                <div class="col-xs-12 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctName" class="form-label">First Name:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctFirNameCredit" name="acctFirName" placeholder="First name on account" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctName" class="form-label">Last Name:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctLastNameCredit" name="acctLastNameCredit" placeholder="Last name on account" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctNum" class="form-label">Card Number:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control inp-cc" id="acctCardNum" name="acctCardNum" placeholder="Card number" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctCVV" class="form-label">CVV:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="acctCVV" name="acctCVV" placeholder="CVV number" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-12 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="acctExpiry" class="form-label">Expiry Date:</label>
+                                </div>
+                                <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3 text-left">
+                                    <input type="number" class="form-control" id="expMnth" name="expMnth" pattern="\d{2}"  maxlength="2" placeholder="MM" required/>
+                                </div>
+                                <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1 text-left"><p style="font-size: 1.5em;">/</p></div>
+                                <div class="col-xs-2 col-sm-3 col-md-3 col-lg-3 text-left">
+                                    <input type="number" class="form-control" id="expYear" name="expYear" pattern="\d{4}" maxlength="4" min="1900" max="9999" placeholder="YYYY" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                    <label for="payAmt" class="form-label">Amount $:</label>
+                                </div>
+                                <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                    <input type="text" class="form-control" id="payAmt" name="payAmt" placeholder="Pay Amount" required/>
+                                </div>
+                            </div>
+                            <div class="row p-1">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right">
+                                    <button type="button" id="btnPay" class="btn btn-primary mt-3 b-card b-pay">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="frmPaypal" style="display: none;">
+                        <form class="form" method="post" action="/api/submitpayment">
+                            <!-- <form id="paypalForm" action="https://www.paypal.com/cgi-bin/webscr" method="post"> -->
+                                <input type="hidden" name="cmd" value="_xclick">
+                                <input type="hidden" name="business" value="your_paypal_email@example.com">
+                                <input type="hidden" name="currency_code" value="USD">
+                                <!-- PayPal account information -->
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="email" class="form-label">Email:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="password" class="form-label">Password:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payBillingAddress" class="form-label">Address:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payBillingAddress" name="payBillingAddress" placeholder="Address" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payCity" class="form-label">City:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payCity" name="payCity" placeholder="City" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payState" class="form-label">State:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payState" name="payState" placeholder="State" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payZip" class="form-label">Zip COde:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payZip" name="payZip" placeholder="Zip COde" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payCreditCard" class="form-label">Credit Card:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payCreditCard" name="payCreditCard" placeholder="Credit Card #" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payExpDate" class="form-label">Expiry Date:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input type="month" class="form-control" id="payExpDate" name="payExpDate" placeholder="Expiry Date" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-4">
+                                        <label for="payCVV" class="form-label">CVV:</label>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-6 col-md-6 col-lg-4">
+                                        <input class="form-control" id="payCVV" name="payCVV" placeholder="CVV Code" required>
+                                    </div>
+                                </div>
+                                <div class="row p-1">
+                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right">
+                                        <input type="submit" class="btn btn-primary mt-3 b-paypal b-pay" value="Submit">                                    </div>
+                                </div>
+
+                                <!-- Credit card details (optional) -->
+                                <!-- <label for="payCreditCardNumber">Credit Card Number:</label>
+                                <input type="text" id="payCreditCardNumber" name="credit_card_number"><br>
+                                <label for="expiryDate">Expiry Date:</label>
+                                <input type="text" id="expiryDate" name="expiry_date" placeholder="MM/YYYY"><br>
+                                <label for="cvv">CVV:</label>
+                                <input type="text" id="cvv" name="cvv"><br> -->
+                                <!-- Additional fields for item details if needed -->
+                                <!-- <input type="hidden" name="item_name" value="Service Name"> -->
+                                <!-- <input type="hidden" name="amount" value="10.00"> -->
+                                <!-- <input type="hidden" name="return" value="https://example.com/success"> -->
+                                <!-- <input type="hidden" name="cancel_return" value="https://example.com/cancel"> -->
+                                <!-- <input type="submit" class="btn btn-primary mt-3 b-paypal" value="Pay with PayPal"> -->
+                            <!-- </form> -->
+                        </form>
+                    </div> 
+                </div>
+            </div>
         </div>
     </div>
 
-    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" id="billing" style="display: none;">
-        <div class="row">
-            <h4>Billing</h4>
-        </div>
-    </div>
+    <!-- footer -->
+    <div class="container-fluid footer-bg" style="width: 100%;padding:5px;">
+		<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin:0;padding:0;">
+			<footer class=" text-white" style="width: 100%; padding:10px 0 10px 0;">
+				<div class="row">
+					<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+						<!-- <ul>
+							<li>this on one link</li>
+							<li>this on one link</li>
+							<li>this on one link</li>
+						</ul>
+					</div>
+					<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+						<ul>
+							<li>this on one link</li>
+							<li>this on one link</li>
+							<li>this on one link</li>
+						</ul>
+					</div> -->
+					<section id="social" class="mb-5 text-center social">
+						Follow Ua
+						<!-- Facebook -->
+						<a class="btn  btn-floating m-1" href="/api/facebook" role="button">
+							<i class="fab fa-facebook-f"></i>
+						</a>
+		
+						<!-- Twitter -->
+						<!-- <a class="btn btn-floating m-1" href="#!" role="button">
+							<i class="fab fa-twitter"></i>
+						</a> -->
+		
+						<!-- Google -->
+						<!-- <a class="btn btn-floating m-1" href="#!" role="button">
+							<i class="fab fa-google"></i>
+						</a> -->
+		
+						<!-- Instagram -->
+						<a class="btn  btn-floating m-1" href="/api/instagram" role="button">
+							<i class="fab fa-instagram"></i>
+						</a>
+		
+						<!-- Linkedin -->
+						<a class="btn  btn-floating m-1" href="/api/linkedin" role="button">
+							<i class="fab fa-linkedin-in"></i>
+						</a>
+		
+						<!-- Github -->
+						<!-- <a class="btn btn-floating m-1" href="#!" role="button">
+							<i class="fab fa-github"></i>
+						</a> -->
+					</section>
+				</div>
+		
+			</footer>
+		</div>
+	</div>
 </div>
 
 </body>
 
 <script type="text/javascript">
 let data;
+let hostRoot = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');	
 
 $(window).bind('load',function(){
-
+    $('#payModal').modal('show');
+    $('#divBltn').css('display','none');
+    getCountryData();
+    var currentURL = window.location.href;
+    checkUrl(currentURL);
 });
 
-$('#btnLogin').bind('click',function(){
-    // validateLogin();
-    $('#svcDrop').css('display','inline-block');
-});
+$(document).ready(function() {
+    $('#frmLogin').submit(function(event) {
+        event.preventDefault();
+        var formData = $(this).serialize();
+        // var url = $(this).attr('id') == 'frmLogin' ? hostRoot+ '/api/clientlogin' : hostRoot + '/api/createacctdetail';
+        var formId = $(this).attr('id'); // Get the ID of the submitted form
 
-function validateLogin()
-{
-    document.getElementById('frmLogin').addEventListener('submit', async (event) => {
-           event.preventDefault();
-
-            const formData = new FormData(event.target);
-            const userid = formData.get('userid');
-            const password = formData.get('userpassword');
-
-            try {
-                const isLoggedIn =await fetch('/api/validatelogin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ userid, password })
-                }).then(
-                    function(res){
-                        return res.json();
-                }).then(function (responseData){
-                    let loggedIn = responseData.loggedin;
-                    return loggedIn;
-                });
-
-                if(isLoggedIn)
-                {
-                    $('#divLoggIn').css('display','none');
-                    $('#divOther').css('display','inline-block');
+        // AJAX POST request to submit form data to the server
+        $.ajax({
+            type: 'POST',
+            url: '/api/clientlogin',
+            data: formData,
+            success: function(response) {
+                console.log(response.loggedIn);
+                if(response.loggedIn){
+                    // $('#divBltn').css('display','inline-block');
+                    $('#divLogIn').css('display','none');
+                    $('#pNotify').text('');
+                    $('#divNotify').css('display','none');
+                    $('#hdId').val(response.clientId);
+                    $('#greeting').css('display','inline-block');
+                    getClientProfile();
+                    $('#profile').css('display','inline-block');
+                }else {
+                    $('#divBltn').css('display','none');
+                    $('#pNotify').text('User name or password is incrorect. Please check email and password and try again.');
+                    $('#divNotify').css('display','inline-block');
                 }
-            } catch (error) {
-                console.error('Error submitting form:', error);
+            },
+            error: function(xhr, status, error) {
+                // Handle errors
+                console.error('Error during login:', error);
+            },
+            complete: function(){
+                    // getClientProfile();
+                    // $('#profile').css('display','inline-block');
             }
         });
-}
+    });
+});
 
 // Function to trigger Google login
 function loginWithGoogle() {
@@ -221,30 +902,744 @@ function loginWithGoogle() {
 $('.ulportal').bind('click',function(event){
     
     try{
-    event.preventDefault();
-    let id = $(this).prop('id').replace("my", "");
-    alert(id);
-    if(id != 'navbarDropdown'){
-        console.log('id   '+id);
-        $("#"+id).css('display','inline-block');
+        event.preventDefault();
+        let id = $(this).prop('id').replace("my", "");
+        // alert(id);
+        if(id != 'navbarDropdown'){
+            // console.log('id   '+id);
+            // $("#"+id).css('display','inline-block');
+            if(id === 'profile')
+            {
+                $('#profile').css('display','inline-block');
+                $('#account').css('display','none');
+                $('#billing').css('display','none');
+                getClientProfile();
+            }else if(id === 'account'){
+                $('#profile').css('display','none');
+                $('#account').css('display','inline-block');
+            }else if(id === 'billing'){
+                $('#profile').css('display','none');
+                $('#account').css('display','none');
+                $('#billing').css('display','inline-block');
+                getClientBillingInfo();
+            }
+        }
+    }catch(e){
+        alert('error:     '+e.error);
     }
-
-    fetch('/api/getdatarequest?id='+id+'').then(
-        function(res){
-            return res.json();
-    }).then(function(responseData){
-        const grpCountByDate  = groupByDate(responseData);
-        // createChart(grpCountByDate,'bar');
-    });
-}catch(e){
-    alert('error:     '+e.error);
-}
 });
 
 $('#lnkForgot').bind('click',function(){
     $('#divReset').css('display','inline-block');
-    $('#divLoggIn').css('display','none');
+    $('#divLogIn').css('display','none');
 });
+
+$('#lnkRegister').bind('click',function(){
+    $('#divCreateAccount').css('display','inline-block');
+    $('#divLogIn').css('display','none');
+});
+
+$('#cpassre').bind('change',function(){
+    var isMatch = checkPasswordMatch();
+    if(!isMatch)
+    {
+        displayMssg('Passwords do not match');
+        $('#cpass').focus();
+        $('#cpass').select();
+    }else {
+        $("#divMsgPar").empty();
+        $("#divMsgPar").css('display','none');
+    }
+});
+
+$('#cnfemail').bind('change',function(){
+    var isMatch = validPass();
+    if(!isMatch){
+        displayMssg('Emails do not match');
+        $('#cemail').focus();
+        $('#cemail').select();
+
+    }else {
+        $("#divMsgPar").empty();
+        $("#divMsgPar").css('display','none');
+    }
+    
+});
+
+$('#btnCreate').bind('click',function(){
+    var validPass = validatePassword();
+    if(!validPass){
+        displayMssg('Password is incorrect form');
+    }else {
+        $("#divMsgPar").empty();
+        $("#divMsgPar").css('display','none');
+        createLogin();
+    }
+});
+
+$('#btnSaveAccDetail').bind('click',function(){
+    postAccountDetail();
+});
+
+// Edit button click event
+$('#editButton').bind('click',function() {
+    $('.p-field input').prop('readonly', false);
+    $('#editButton').hide();
+    $('#saveButton').show();
+});
+
+$('#bEditBtn').bind('click',function() {
+    $('#bEditBtn').hide();
+    $('#bSaveBtn').show();
+    $('#tdEdit').css('display','none');
+
+    //$('#fullCard')
+    var fullCard = document.getElementById('fullCard').value;
+    document.getElementById('bdCreditCardNumber').value = fullCard;
+
+    // Find all input fields within the table with class "form-control b-detail"
+    $('#jsonData').find('input.form-control.b-detail').each(function() {
+        // Remove the readonly attribute
+        $(this).prop('readonly', false);
+    });
+});
+
+$('#btnReset').bind('click',function(){
+    postReset();
+});
+
+$('#lnkDismiss').bind('click',function(){
+    $('#pNotify').text('');
+    $('#divNotify').css('display','none');
+
+});
+
+$('#payType').change(function(){
+    var pymntType = $(this).val();
+    console.log('Selected value:', pymntType);
+    switch(pymntType)
+    {
+        case 'credit': 
+            //frmCredit
+            $('#frmCredit').css('display','inline-block');
+            $('#frmBank').css('display','none');
+            $('#frmPaypal').css('display','none');
+            break;
+        case 'debit': 
+            $('#frmCredit').css('display','inline-block');
+            $('#frmBank').css('display','none');
+            $('#frmPaypal').css('display','none');
+            break;
+        case 'checking': 
+            $('#frmBank').css('display','inline-block');
+            $('#frmCredit').css('display','none');
+            $('#frmPaypal').css('display','none');
+            break;
+        case 'paypal': 
+            $('#frmBank').css('display','none');
+            $('#frmPaypal').css('display','inline-block');
+            $('#frmCredit').css('display','none');
+            break;
+        case 'busacct': 
+            $('.paycheck').css('display','inline-block');
+            $('.paycard').css('display','none');            
+            break;
+        default: 
+            break;
+    }
+});
+
+$('.b-pay').on('click', function(event) {
+    // Your event handling code goes here
+    var formId = $(this).closest('form').attr('id');
+    console.log('FORM ID \n'+formId);
+    if($(this).text() === 'Submit'){
+        if(validateExpiryYear($('#expYear').val(),$('#expYear').prop('id'))){
+            $(this).text('Confirm');
+        }
+    }else if ($(this).text() === 'Confirm'){
+        console.log('SUBMITTING THE FORM');
+        $('#'+formId).submit();
+    }
+});
+
+$('.inp-cc').bind('input',function(){
+    const inputValue = $(this).val();
+    console.log(inputValue);
+    const maskedValue = inputValue.replace(/.(?=.{4})/g, '*');
+    console.log(maskedValue);
+    $(this).val(maskedValue);
+});
+
+// function validateForm(id){
+
+// }
+
+function validateExpiryYear(yearVal,eleId){
+    var currentYear = new Date().getFullYear();
+    var inputYear = parseInt(yearVal);
+
+    
+    if(inputYear === currentYear){
+        return validateExpiryMonth($('#expMnth').val(),$('#expMnth').prop('id'));
+    }else if (inputYear <= currentYear) {
+        $('#frmMssg').text('Please enter a year in the future.');
+        $('#'+eleId).val(''); // Clear the input field
+        return false;
+    }
+    $('#frmMssg').text('');
+    return true;
+}
+
+function validateExpiryMonth(mtnVal,eleId){
+    var currentMonth = new Date().getMonth() + 1;
+    if (mtnVal < currentMonth) {
+        $('#frmMssg').text('Please enter a month in the future.');
+        $('#'+eleId).val(''); // Clear the input field
+        return false;
+    }
+    $('#frmMssg').text('');
+    return true;
+}
+
+function postReset()
+{
+    let email = {email:$('#rstUser').val()};
+    var url =  hostRoot + '/api/passreset';
+    try {
+        $.ajax({
+        type: 'POST',
+        url: url,
+        data: email,
+        success: function(response) {
+            console.log('MESSAGE \n'+response.message);
+            if(response.message === 'failed'){
+                $('#pNotify').text('This account does not exist. Please create an account.');
+                $('#divNotify').css('display','inline-block');
+                $('#divReset').css('display','none');
+                $('#divCreateAccount').css('display','inline-block');
+            }else{
+                $('#pNotify').text(response.message );
+                $('#divNotify').css('display','inline-block');
+                $('#divReset').css('display','none');
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        },
+        complete: function(){
+            // $('#frmAccount :input').not(':button, :submit, :reset, :hidden').val('').removeAttr('checked').removeAttr('selected');
+        }
+    });
+ 
+    } catch (error) {
+        console.log('ERROR IN CONFIRMING EMAIL DOES NOT EXISTS \n'+error);
+    }
+
+}
+
+function checkPasswordMatch() {
+    var password1 = document.getElementById("cpass").value;
+    var password2 = document.getElementById("cpassre").value;
+    if (password1 === password2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function validatePassword() {
+    var password = document.getElementById("cpass").value;
+    var containsUpperCase = /[A-Z]/.test(password);
+    var containsLowerCase = /[a-z]/.test(password);
+    var containsNumber = /\d/.test(password);
+    var containsSpecialCharacter = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password);
+    var isLengthValid = password.length >= 10;
+    return containsUpperCase && containsLowerCase && containsNumber && containsSpecialCharacter && isLengthValid;
+}
+
+function displayMssg(msg)
+{
+    var div = '<div class="row">'
+        +'<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">'
+        +'<label for="" class="col-form-label"></label>'
+        +'</div>'
+        +'<div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">'
+        +'<i class="fa-solid fa-triangle-exclamation"></i>'
+        +'</div><div class="col-xs-7 col-sm-7 col-md-7 col-lg-7">'
+        +'<p class="form-control">'+msg+'</p>'
+        +'</div></div>';
+        $("#divMsgPar").append(div);
+        $("#divMsgPar").css('display','block');
+
+}
+
+function togglePassword(inputId) {
+    var passwordInput = document.getElementById(inputId);
+    var icon = document.querySelector(`#${inputId} + .eye-icon`);
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        passwordInput.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+function validPass(){
+    var email1 = document.getElementById('cemail').value;
+    var email2 = document.getElementById('cnfemail').value;
+
+    if (email1 === email2) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function createLogin(){
+    var data = $('#frmCreate').serialize();
+    var url =  hostRoot + '/api/createlogin';
+    // Make the POST request
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: data,
+        success: function(response) {
+            if(response.message === 'success')
+            {
+                $('#frmCreate :input').not(':button, :submit, :reset, :hidden').val('').removeAttr('checked').removeAttr('selected');
+                $('#divCreateAccount').css('display','none');
+                // $('.client').css('display','block');
+                $('#divComInfo').css('display','inline-block');
+                $('#hdId').val(response.Id[0]);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        },
+        complete: function(){
+            getCountryData();
+        }
+    });
+}
+
+function getElementNamesByClassName(className,response) {
+    const elements = document.getElementsByClassName(className);
+    const names = [];
+    // Parse the outer JSON array
+    const jsonArray = JSON.parse(JSON.stringify(response));
+    // Access the first element of the array
+    const firstElement = jsonArray[0];
+    // Parse the "ClientProfile" value, which is a stringified JSON array
+    const clientProfileString = JSON.parse(firstElement.ClientProfile);
+    // Now you can access the properties of the client profile object
+    const clientProfile = clientProfileString[0]; // Assuming there's only one element in the array
+
+  // Iterate through the elements and push their names into the names array
+  for (let i = 0; i < elements.length; i++) {
+    // console.log('NAME     '+elements[i].name);
+    names.push(elements[i].name);
+  }
+  
+  for(let i = 0; i < names.length; i++)
+  {
+    for (var key in clientProfile) {
+        if(names[i].toLowerCase() === key.toLocaleLowerCase()){
+            $('#'+names[i]).val(clientProfile[key]);
+        }
+    }
+  }
+  return names;
+}
+
+function validateLogin()
+{
+    document.getElementById('frmLogin').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.target);
+        const userid = formData.get('userid');
+        const password = formData.get('userpassword');
+
+        try {
+            const isLoggedIn =await fetch('/api/validatelogin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userid, password })
+            }).then(
+                function(res){
+                    return res.json();
+            }).then(function (responseData){
+                let loggedIn = responseData.loggedin;
+                return loggedIn;
+            });
+
+            if(isLoggedIn)
+            {
+                $('#divLoggIn').css('display','none');
+                $('#divOther').css('display','inline-block');
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+        }
+    });
+}
+
+function getClientProfile()
+{
+    $.ajax({
+      type: 'POST',
+      url: '/api/getclientprofile',
+      data: {
+        clientId: $('#hdId').val() // Replace 1 with the actual client ID you want to fetch
+      },
+      success: function(response) {
+        $('#frmLogin').css('display','none');
+        getElementNamesByClassName('p-field',response);
+        getClientAccount();  
+        $('#account').css('display','inline-block');
+      },
+      error: function(xhr, status, error) {
+        console.error('Error fetching client profile:', error);
+      }
+    });
+}
+ 
+function getClientAccount(){
+    $.ajax({
+      type: 'POST',
+      url: '/api/getclientinvoicedetailbyid',
+      data: {
+        clientId: $('#hdId').val() // Replace 1 with the actual client ID you want to fetch
+      },
+      success: function(response) {
+        populateInvoiceTable(response);
+        getClientBillingInfo();
+        $('#billing').css('display','inline-block');
+      },
+      error: function(xhr, status, error) {
+        console.error('Error fetching client profile:', error);
+      }
+    });
+}
+
+function getClientBillingInfo(){
+    $.ajax({
+      type: 'POST',
+      url: '/api/getclientbillinginfo',
+      data: {
+        clientId: $('#hdId').val() // Replace 1 with the actual client ID you want to fetch
+      },
+      success: function(response) {
+        populateTable(response);
+      },
+      error: function(xhr, status, error) {
+        console.error('Error fetching client profile:', error);
+      }
+    });
+}
+
+function postAccountDetail(){
+    try {
+        // Check if any required field is empty
+        var isValid = true;
+        $('#frmAccount .required').each(function() {
+            var value = $(this).val().trim();
+            if (value === '') {
+                isValid = false;
+                return false; // Exit loop early if any field is empty
+            }
+        });
+            
+        // If any required field is empty, show an error message
+        if (isValid) {
+            var formData = $('#frmAcc').serialize();
+            var url =  hostRoot + '/api/createacctdetail';
+
+            //  Make the POST request
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                success: function(response) {
+                    if(response.message === 'success'){
+                        $('#divComInfo').css('display','none');
+                        $('#frmAccount :input').not(':button, :submit, :reset, :hidden').val('').removeAttr('checked').removeAttr('selected');
+                        // $('#divBltn').css('display','inline-block');
+                    }else {
+                        // $('#divBltn').css('display','none');
+                        $('#pNotify').text('Something went wrong. Please try inserting companyh information agian.');
+                        $('#divNotify').css('display','inline-block');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                },
+                complete: function(){
+                    $('#frmAccount :input').not(':button, :submit, :reset, :hidden').val('').removeAttr('checked').removeAttr('selected');
+                }
+            });
+        }
+    } catch (error) {
+        alert(error);
+    }
+}
+
+function getCountryData(){
+    // AJAX call to fetch country data
+    $.ajax({
+        url: '/api/getcountrydata', // Replace with your API endpoint or data source
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            for(var i = 0; i < response.length;i++) {
+                var option = document.createElement("option");
+                // Set the value of the option (you can modify this based on the structure of your response)
+                option.value = i; // Assuming response is an array of strings
+                // Set the text content of the option
+                option.textContent = response[i]; // Assuming response is an array of strings
+                // Append the option to the select list
+                document.getElementById("countrySelect").appendChild(option);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        }
+    });
+}
+
+function populateBilling(billingInfo){
+    // Populate the input fields with the values from the JSON object
+    document.getElementById('bdBillingAddress').value = billingInfo.BillingAddress;
+    document.getElementById('bdBillingCity').value = billingInfo.BillingCity;
+    document.getElementById('bdBillingState').value = billingInfo.BillingState;
+    document.getElementById('bdBillingZipCode').value = billingInfo.BillingZipCode;
+    document.getElementById('bdCreditCardNumber').value = billingInfo.CreditCardNumber;
+    document.getElementById('bdExpiryDate').value = billingInfo.ExpiryDate;
+    document.getElementById('bdCVV').value = billingInfo.CVV;
+}
+
+// Function to populate table with JSON data
+function populateTable(billingInfo) {
+    // Setting values for each input field
+    $('#FirstName').val(billingInfo.FirstName);
+    $('#LastName').val(billingInfo.LastName);
+    $('#CompanyName').val(billingInfo.CompanyName);
+    $('#bdCreditCardNumber').val(maskCreditCard(billingInfo.CreditCardNumber));
+    //fullCard
+    $('#fullCard').val(billingInfo.CreditCardNumber);
+
+    $('#bdExpiryDate').val(formatDate(billingInfo.ExpiryDate));
+    $('#bdCVV').val(billingInfo.CVV);
+    $('#bdBillingAddress').val(billingInfo.BillingAddress);
+    $('#bdBillingCity').val(billingInfo.BillingCity);
+    $('#bdBillingState').val(billingInfo.BillingState);
+    $('#bdBillingZipCode').val(billingInfo.BillingZipCode);
+}
+
+// Function to populate the table rows
+function populateInvoiceTable(response) {
+    $('#tdCompanyName').text(response[0].CompanyName);
+    
+    let arrInv = response[1];
+    let invoiceHTML = ``;
+
+    $.each(arrInv, function(index, item) {
+        if(item.StatusName !=='Pending')
+        {
+             invoiceHTML = `
+                <div class="row">
+                    <div class="col-xs-4 col-sm-4 col-md-2 col-lg-1">
+                        <label for="invNum" class="form-label">Invoice #:</label>
+                        <input type="text" class="form-control i-field" id="invNum${index}" name="invNum${index}" value="${item.InvoiceNum}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-2 col-lg-1">
+                        <label for="invDate" class="form-label">Invoice Date:</label>
+                        <input type="text" class="form-control i-field" id="invDate${index}" name="invDate${index}" value="${item.InvoiceDate}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-2 col-lg-1">
+                        <label for="invDueDate" class="form-label">Due Date:</label>
+                        <input type="text" class="form-control i-field" id="invDue${index}" name="invDue${index}" value="${item.InvoiceDate}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-1">
+                        <label for="invPaymentDate" class="form-label">Payment Date:</label>
+                        <input type="text" class="form-control i-field" id="invPayDate${index}" name="invPayDate${index}" value="${item.PaymentDate}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-3 col-lg-1">
+                        <label for="invPayAmt" class="form-label">Payment Amount:</label>
+                        <input type="text" class="form-control i-field" id="invPayAmt${index}" name="invPayAmt${index}" value="${item.Amount}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-3 col-lg-1">
+                        <label for="invCurBalance" class="form-label">Current Balance:</label>
+                        <input type="text" class="form-control i-field" id="invCurBalance${index}" name="invCurBalance${index}" value="${item.CurBalance}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-1">
+                        <label for="invStatus" class="form-label">Status:</label>
+                        <input type="text" class="form-control i-field" id="invStatus${index}" name="invStatus${index}" value="${item.StatusName}" readonly>
+                    </div>
+                    <div class="col-xs-4 col-sm-4 col-md-5 col-lg-1">
+                        <label for="invNotes" class="form-label">Notes:</label>
+                        <input type="text" class="form-control i-field" id="invNotes${index}" name="invNotes${index}" value="${item.Notes}" readonly>
+                    </div>
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right" style="background-color:orange;">
+                        <button type="button" class="btn btn-success" id="btnInv${item.InvoiceNum}" onclick="pay(this)">Pay</button>
+                    </div>
+                </div>
+                <hr style="border-bottom: 2px solid lightblue" />
+            `;
+        }else{
+             invoiceHTML = `
+            <div class="row">
+                <div class="col-md-2">
+                    <label for="invNum" class="form-label">Invoice #:</label>
+                    <input type="text" class="form-control i-field" id="invNum${index}" name="invNum${index}" value="${item.InvoiceNum}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invDate" class="form-label">Invoice Date:</label>
+                    <input type="text" class="form-control i-field" id="invDate${index}" name="invDate${index}" value="${item.InvoiceDate}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invDueDate" class="form-label">Due Date:</label>
+                    <input type="text" class="form-control i-field" id="invDue${index}" name="invDue${index}" value="${item.InvoiceDate}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invPaymentDate" class="form-label">Payment Date:</label>
+                    <input type="text" class="form-control i-field" id="invPayDate${index}" name="invPayDate${index}" value="${item.PaymentDate}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invPayAmt" class="form-label">Payment Amount:</label>
+                    <input type="text" class="form-control i-field" id="invPayAmt${index}" name="invPayAmt${index}" value="${item.Amount}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invCurBalance" class="form-label">Current Balance:</label>
+                    <input type="text" class="form-control i-field" id="invCurBalance${index}" name="invCurBalance${index}" value="${item.CurBalance}" readonly>
+                </div>
+                <div class="col-md-2">
+                    <label for="invStatus" class="form-label">Status:</label>
+                    <input type="text" class="form-control i-field" id="invStatus${index}" name="invStatus${index}" value="${item.StatusName}" readonly>
+                </div>
+                <div class="col-md-5">
+                    <label for="invNotes" class="form-label">Notes:</label>
+                    <input type="text" class="form-control i-field" id="invNotes${index}" name="invNotes${index}" value="${item.Notes}" readonly>
+                </div>
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-right pt-1">
+                    <button type="button" class="btn btn-success" id="btnInv${item.InvoiceNum}" onclick="pay(this)">Pay</button>
+                </div>
+            </div>
+            <hr style="border-bottom: 2px solid lightblue" />
+        `;
+        }
+        $('#divInv').append(invoiceHTML);
+
+    });
+}
+
+function maskCreditCard(cardNumber) {
+  // Extract the last four digits of the card number
+  var lastFourDigits = cardNumber.slice(-4);
+  
+  // Mask the rest of the digits with asterisks
+  var maskedDigits = '*'.repeat(cardNumber.length - 4);
+  
+  // Concatenate the masked digits with the last four digits
+  var maskedCardNumber = maskedDigits + lastFourDigits;
+  
+  return maskedCardNumber;
+}
+
+function formatDate(dateString) {
+    // Create a Date object from the dateString
+    var date = new Date(dateString);
+
+    // Get the month and year from the Date object
+    var month = date.getMonth() + 1; // Add 1 because getMonth() returns 0-indexed values
+    var year = date.getFullYear();
+
+    // Format the month and year as MM/YYYY
+    var formattedDate = (month < 10 ? '0' : '') + month + '/' + year;
+
+    return formattedDate;
+}
+
+function pay(element){
+    var inpId = $(element).attr('id');
+    alert('button clicked \n'+inpId);
+    var strtINd = 6;
+    var invNum = inpId.substring(strtINd,inpId.length);
+    alert(invNum);
+
+    // $('.tr-button').click(function(){
+        // Get the closest table row (tr) element from the clicked button
+        // var closestRow = $(element).closest('tr');
+        // var closestInput = $(element).element('div').find('input[id="input1"]');
+        // Log the closest table row (tr) element
+        // console.log(closestRow.innerHTML);
+    // });
+
+    // // Get the parent table row (tr)
+    // var tableRow = $(this).closest('tr');
+    // //event.target.closest("tr");
+    // alert(tableRow.html);
+    // // Get the first child (td) of the table row (assuming it's the Invoice ID)
+    // var invoiceId = tableRow.querySelector("td:first-child").textContent;
+    
+    // // Log the Invoice ID
+    // console.log("Invoice ID:", invoiceId);
+}
+
+function checkUrl(url){
+    const hasParam = new URLSearchParams(url.split('?')[1]);
+    const param = new URLSearchParams(url.split('?')[1]);
+    let clientid = param.get('clientid');
+
+    // Log the result
+    if (clientid) {
+        const param = new URLSearchParams(url.split('?')[1]);
+        let clientid = param.get('clientid');
+        $('#hdId').val(clientid);
+        $('#divLogIn').css('display','none');
+        $('#profile').css('display','inline-block');
+        getClientProfile();
+    } else {
+        $('#account').css('display','none');
+        $('#billing').css('display','none');
+        $('#profile').css('display','none');
+        $('#account').css('display','none');
+    }
+
+}
+
+// $('#getClientProfileBtn').click(function() {
+//     // AJAX POST request to fetch client profile
+//     $.ajax({
+//       type: 'POST',
+//       url: '/getclientprofile',
+//       data: {
+//         clientId: 1 // Replace 1 with the actual client ID you want to fetch
+//       },
+//       success: function(response) {
+//         console.log('RESPONSE    \n'+response);
+//         // Display client profile data in HTML table
+//         // $('#clientProfileTable').show();
+//         $('#firstName').val(response.firstName);
+//         $('#lastName').val(response.lastName);
+        
+        
+//         // $('#clientProfileTable tbody').empty(); // Clear existing data
+//         // $.each(response, function(key, value) {
+//         //   $('#clientProfileTable tbody').append(`<tr><td>${key}</td><td>${value}</td></tr>`);
+//         // });
+//       },
+//       error: function(xhr, status, error) {
+//         console.error('Error fetching client profile:', error);
+//       }
+//     });
+// });
 
 </script>
 
