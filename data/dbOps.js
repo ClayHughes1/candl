@@ -53,73 +53,102 @@ const clientPool = new sql.ConnectionPool(clientDbConfig);
 const adminPool = new sql.ConnectionPool(adminDbConfig);
 
 const getId = async(idType,object) => {
-    // console.log('ID TYPE   \n'+idType);
     await clientPool.connect()
     // Connect to the database
     const request = await clientPool.request();
+    console.log(JSON.stringify(object));
     try {
-        idType = 'CQ';
+        // idType = 'CQ';
 
-        object = {
-            srchValue1:'candl.ent.email@canl-enterprises.com',
-            srchValue2:'Clay',
-            srchValue3:'Hughes',
-            srchValue4:'The Company',
-            srchStart:new  Date(),
-            srchEnd:new Date()
-        };
+        let dbParams;
 
         switch(idType){
             case 'C':
                 //Client
                 request.input('srchType', sql.VarChar(50),'C');
+                dbParams = {srchValue1:object.FirstName,srchValue2:object.LastName,srchValue3:object.CompanyName,srchValue4:NULL,srchStart:NULL,srchEnd:NULL}
                 break;
             case 'ICA':
                 //Client address
                 request.input('srchType', sql.VarChar(50),'ICA');
+                dbParams = {srchValue1:object.FirstName,srchValue2:object.LastName,srchValue3:object.CompanyName,srchValue4:NULL,srchStart:NULL,srchEnd:NULL}
+
                 break;
             case 'ICC':
                 //Client contact
                 request.input('srchType', sql.VarChar(50),'ICC');
+                dbParams = {srchValue1:object.FirstName,srchValue2:object.LastName,srchValue3:object.CompanyName,srchValue4:NULL,srchStart:NULL,srchEnd:NULL}
+
                 break;
             case 'CL':
                 //Client Login
                 request.input('srchType', sql.VarChar(50),'CL');
+        
                 break;
             case 'CS':
                 //Company services
                 request.input('srchType', sql.VarChar(50),'CS');
+        
                 break;
             case 'CO':
                 //Client offer
                 request.input('srchType', sql.VarChar(50),'CO');
+        
                 break;
             case 'CQ':
                 //Client qoute
                 // console.log('GETTING THE QOUTE ID ......................... \n');
                 request.input('srchType', sql.VarChar(50),'CQ');
+                dbParams = {
+                    srchValue1:object.EmailAddress,
+                    srchValue2:object.FirstName,
+                    srchValue3:object.LastName,
+                    srchValue4:object.CompanyName,
+                    srchStart:new  Date(),
+                    srchEnd:new  Date()
+                };
                 break;
-            case '':
+            case 'CA':
+                console.log('does ca id exist');
+                //Client Assistance Request
+                request.input('srchType', sql.VarChar(50),'CA');
+                dbParams = {
+                    srchValue1:object.EmailAddress,
+                    srchValue2:object.FirstName,
+                    srchValue3:object.LastName,
+                    srchValue4:object.CompanyName,
+                    srchStart:new  Date(),
+                    srchEnd:new  Date()
+                };
+
+                console.log('dbparams   \n'+JSON.stringify(dbParams));
                 break;
             default:
                 break;
         }
 
-        request.input('srchValue1', sql.VarChar(50), object.srchValue1);
-        request.input('srchValue2', sql.VarChar(50), object.srchValue2);
-        request.input('srchValue3', sql.VarChar(50), object.srchValue3);
-        request.input('srchValue4', sql.VarChar(50), object.srchValue4);
-        request.input('srchStart', sql.Date, object.srchStart);
-        request.input('srchEnd', sql.Date, object.srchEnd);
+        // request.input('srchValue1', sql.VarChar(50), object.srchValue1);
+        // request.input('srchValue2', sql.VarChar(50), object.srchValue2);
+        // request.input('srchValue3', sql.VarChar(50), object.srchValue3);
+        // request.input('srchValue4', sql.VarChar(50), object.srchValue4);
+        // request.input('srchStart', sql.Date, object.srchStart);
+        // request.input('srchEnd', sql.Date, object.srchEnd);
+
+        request.input('srchValue1', sql.VarChar(50), dbParams.srchValue1);
+        request.input('srchValue2', sql.VarChar(50), dbParams.srchValue2);
+        request.input('srchValue3', sql.VarChar(50), dbParams.srchValue3);
+        request.input('srchValue4', sql.VarChar(50), dbParams.srchValue4);
+        request.input('srchStart', sql.Date, dbParams.srchStart);
+        request.input('srchEnd', sql.Date, dbParams.srchEnd);
 
 
         result = await request.execute('GetIdFromTables');
+        console.log(request.parameters);
         // console.log('THE RESULTS ARE ...........   \n'+JSON.stringify(result.recordsets[0][0].SelectedID));
         return result.recordsets[0][0].SelectedID;
     }catch(err){
-        // console.log('an error has occurred     '+err);
-    }finally{
-        // await clientPool.close();
+        await logSiteError(err);
+        throw err;
     }
 }
 
@@ -136,9 +165,8 @@ const getClient = async() =>{
 
     }catch(err)
     {
-        console.error("an error occurred while trying to connect ot the db server  "+err)
-    }finally{
-        await clientPool.close();
+        await logSiteError(err);
+        throw err;
     }
 }
 
@@ -149,8 +177,8 @@ const getClientsAsJSON = async() =>{
         // Return the data as JSON object
         // console.log('records     \n'+JSON.stringify(result.recordsets[0]));
     } catch (err) {
-        console.error('Error occurred:', err);
-        throw err; // Propagate the error
+        await logSiteError(err);
+        throw err;
     } finally {
         // Close the database connection
         await clientPool.close();
@@ -170,140 +198,137 @@ const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
                 request.input(paramName, params[paramName]);
             }
         }
-// console.log(request);
         // Execute the stored procedure
         const result = await request.execute(storedProcedureName);
 
         // Return the result set as JSON
         return result.recordset;
     } catch (err) {
-        // Handle errors
-        console.error('Error occurred:', err);
-        throw err; // Propagate the error
+        await logSiteError(err);
+        throw err;
     }
-    finally{
-        await clientPool.close();
-    }
-    // return await result.recordset;
 }
 
-// //Get SQL functionality
+//Get SQL functionality
 const getDataByType = async(tyepData,params) => {
-    // console.log('type of data........    '+tyepData);
-    // console.log('data........    '+JSON.stringify(params));
     let results;
 
-    switch(tyepData){
-        case 'CA':
-            return executeStoredProcedure('uspGetCustomerAddressAsJSON');
-            break;
-        case 'CBBDR':
-            return executeStoredProcedure('uspGetCustomerBillingInfoByDateRangeAsJSON', { startDate, endDate });
-            break;
-        case 'CBI':
-            return executeStoredProcedure('uspGetCustomerBillingInformationAsJSON');
-            break;
-        case 'OR':
-            return executeStoredProcedure('uspGetOfferRateAsJSON');
-            break;
-        case 'PS':
-            return executeStoredProcedure('uspGetPaymentStatusAsJSON');
-            break;
-        case 'QO':
-            return executeStoredProcedure('uspGetQuoteInformationAsJSON');
-            break;
-        case 'QIBD':
-            return executeStoredProcedure('uspGetQuoteInformationByDateRangeAsJSON', { startDate, endDate });
-            break;
-        case 'SO':
-            return executeStoredProcedure('uspGetSpecialOfferAsJSON');
-            break;
-        case 'SODR':
-            results = await executeStoredProcedure('uspGetSpecialOfferByDateRangeAsJSON', {StartDate:params.StartDate,EndDate: params.EndDate });
-            break;
-        case 'SOBD':
-            return executeStoredProcedure('uspGetSpecialOffersByDate', { date });
-            break;
-        case 'QBCID':
-            return executeStoredProcedure('uspGetAllQouteDataByClientIdInJSON', { clientid: clientId });
-            break;
-        case 'BI':
-            return executeStoredProcedure('uspGetBillingInvoiceAsJSON');
-            break;
-        case 'BINF':
-            return executeStoredProcedure('uspGetClientBillingInfoById', params);
-            break;
-        case 'BICI':
-            return executeStoredProcedure('uspGetBillingInvoiceByClientID', params);
-            //{ clientid: clientid }
-            break;
-        case 'BIBDR':
-            return executeStoredProcedure('uspGetBillingInvoiceByDateRangeAsJSON', { startdate: startdate, enddate: enddate });
-            break;
-        case 'BIBIVD':
-            return executeStoredProcedure('uspGetBillingInvoiceByInvoiceId', { Id: Id });
-            break;
-        case 'BIBPS':
-            return executeStoredProcedure('uspGetBillingInvoicesByPaymentStatus', {status : status });
-            break;
-        case 'BIPSID':
-            return executeStoredProcedure('uspGetBillingInvoicesByPaymentStatusID', { statusid: statusid });
-            break;
-        case 'CBID':
-            return executeStoredProcedure('uspGetClientByIdAsJSON', params);
-            break;
-        case 'CC':
-            return executeStoredProcedure('uspGetClientContactAsJSON');
-            break;
-        case 'CCBE':
-            return executeStoredProcedure('uspGetClientContactByEmailAsJSON', { email: email });
-            break;
-        case 'CCBI':
-            return executeStoredProcedure('uspGetClientContactByIdAsJSON', { id: id });
-            break;
-        case 'CDBCID':
-            return executeStoredProcedure('uspGetClientDataByClientId', { clientid: clientid });
-            break;
-        case 'CLBE':
-            return executeStoredProcedure('uspGetClientLogByEmailAsJSON', { email: email });
-            break;
-        case 'CLBID':
-            return executeStoredProcedure('uspGetClientLogByIdAsJSON', { id: id });
-            break;
-        case 'CL':
-            return executeStoredProcedure('uspGetClientLoginAsJSON');
-            break;
-        case 'CLBCI':
-            return executeStoredProcedure('uspGetClientLoginByClientIdAsJSON', { clientid: clientid });
-            break;
-        case 'C':
-            return executeStoredProcedure('uspGetClientsAsJSON');
-            break;
-        case 'CSOBCI':
-            return executeStoredProcedure('uspGetClientSpecialOfferByClientIdAsJSON', { clientid: clientid});
-            break;
-        case 'CSOBDR':
-            return executeStoredProcedure('uspGetClientSpecialOfferByDateRangeAsJSON', { startdate: startdate, enddate: enddate });
-            break;
-        case 'CSOBID':
-            return executeStoredProcedure('uspGetClientSpecialOfferByIdAsJSON', { id: id});
-            break;
-        case 'CSOBOID':
-            return executeStoredProcedure('uspGetClientSpecialOfferByOfferIdAsJSON', { offerid: offerid });
-            break;
-        case 'CPBCID':
-            return executeStoredProcedure('upsGetClientProfileById', params);
-            break;
-        case 'COU':
-            return executeStoredProcedure('uspGetCountryCodesAsJSON');
-            break;
-        case 'CBE':
-            return executeStoredProcedure('uspGetClientIdByEmail',params);
-            break;
-        default:
-            break;
+    try {
+        switch(tyepData){
+            case 'CA':
+                return executeStoredProcedure('uspGetCustomerAddressAsJSON');
+                break;
+            case 'CBBDR':
+                return executeStoredProcedure('uspGetCustomerBillingInfoByDateRangeAsJSON', { startDate, endDate });
+                break;
+            case 'CBI':
+                return executeStoredProcedure('uspGetCustomerBillingInformationAsJSON');
+                break;
+            case 'OR':
+                return executeStoredProcedure('uspGetOfferRateAsJSON');
+                break;
+            case 'PS':
+                return executeStoredProcedure('uspGetPaymentStatusAsJSON');
+                break;
+            case 'QO':
+                return executeStoredProcedure('uspGetQuoteInformationAsJSON');
+                break;
+            case 'QIBD':
+                return executeStoredProcedure('uspGetQuoteInformationByDateRangeAsJSON', { startDate, endDate });
+                break;
+            case 'SO':
+                return executeStoredProcedure('uspGetSpecialOfferAsJSON');
+                break;
+            case 'SODR':
+                results = await executeStoredProcedure('uspGetSpecialOfferByDateRangeAsJSON', {StartDate:params.StartDate,EndDate: params.EndDate });
+                break;
+            case 'SOBD':
+                return executeStoredProcedure('uspGetSpecialOffersByDate', { date });
+                break;
+            case 'QBCID':
+                return executeStoredProcedure('uspGetAllQouteDataByClientIdInJSON', { clientid: clientId });
+                break;
+            case 'BI':
+                return executeStoredProcedure('uspGetBillingInvoiceAsJSON');
+                break;
+            case 'BINF':
+                return executeStoredProcedure('uspGetClientBillingInfoById', params);
+                break;
+            case 'BICI':
+                return executeStoredProcedure('uspGetBillingInvoiceByClientID', params);
+                //{ clientid: clientid }
+                break;
+            case 'BIBDR':
+                return executeStoredProcedure('uspGetBillingInvoiceByDateRangeAsJSON', { startdate: startdate, enddate: enddate });
+                break;
+            case 'BIBIVD':
+                return executeStoredProcedure('uspGetBillingInvoiceByInvoiceId', { Id: Id });
+                break;
+            case 'BIBPS':
+                return executeStoredProcedure('uspGetBillingInvoicesByPaymentStatus', {status : status });
+                break;
+            case 'BIPSID':
+                return executeStoredProcedure('uspGetBillingInvoicesByPaymentStatusID', { statusid: statusid });
+                break;
+            case 'CBID':
+                return executeStoredProcedure('uspGetClientByIdAsJSON', params);
+                break;
+            case 'CC':
+                return executeStoredProcedure('uspGetClientContactAsJSON');
+                break;
+            case 'CCBE':
+                return executeStoredProcedure('uspGetClientContactByEmailAsJSON', { email: email });
+                break;
+            case 'CCBI':
+                return executeStoredProcedure('uspGetClientContactByIdAsJSON', { id: id });
+                break;
+            case 'CDBCID':
+                return executeStoredProcedure('uspGetClientDataByClientId', { clientid: clientid });
+                break;
+            case 'CLBE':
+                return executeStoredProcedure('uspGetClientLogByEmailAsJSON', { email: email });
+                break;
+            case 'CLBID':
+                return executeStoredProcedure('uspGetClientLogByIdAsJSON', { id: id });
+                break;
+            case 'CL':
+                return executeStoredProcedure('uspGetClientLoginAsJSON');
+                break;
+            case 'CLBCI':
+                return executeStoredProcedure('uspGetClientLoginByClientIdAsJSON', { clientid: clientid });
+                break;
+            case 'C':
+                return executeStoredProcedure('uspGetClientsAsJSON');
+                break;
+            case 'CSOBCI':
+                return executeStoredProcedure('uspGetClientSpecialOfferByClientIdAsJSON', { clientid: clientid});
+                break;
+            case 'CSOBDR':
+                return executeStoredProcedure('uspGetClientSpecialOfferByDateRangeAsJSON', { startdate: startdate, enddate: enddate });
+                break;
+            case 'CSOBID':
+                return executeStoredProcedure('uspGetClientSpecialOfferByIdAsJSON', { id: id});
+                break;
+            case 'CSOBOID':
+                return executeStoredProcedure('uspGetClientSpecialOfferByOfferIdAsJSON', { offerid: offerid });
+                break;
+            case 'CPBCID':
+                return executeStoredProcedure('upsGetClientProfileById', params);
+                break;
+            case 'COU':
+                return executeStoredProcedure('uspGetCountryCodesAsJSON');
+                break;
+            case 'CBE':
+                return executeStoredProcedure('uspGetClientIdByEmail',params);
+                break;
+            default:
+                break;
+        }
+        return results;
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
-    return results;
 }
 
 // //Insert SQL funtionality
@@ -315,16 +340,13 @@ const insertObjectToSql = async(typeData,object) => {
     let Id;
     let result;
     try{
-        const id = await getId('CQ');
-
-        // console.log('THERE IS AN ID PRESENT               \n'+id);
-        
+        const id = await getId(typeData,object);
+        console.log('ID   \n'+id);
         if(id > 0)
         {
             return 'There is  already a record for this item';
         }
         else{
-            // console.log('NO ID IS PRESENT SO WE ARE INSERTING DATA \n');
             switch(typeData)
             {
                 case 'IBI':
@@ -339,7 +361,6 @@ const insertObjectToSql = async(typeData,object) => {
                     request.input('StatusId', sql.Int, object.statusId);
                     request.input('PaymentDate', sql.Date, object.paymentDate);
                     request.input('Notes', sql.Text, object.notes);
-                    // return executeStoredProcedure('InsertIntoBillingInvoice',request);
                     result = await request.execute('EXEC uspInsertIntoBillingInvoice');
                     break;
                 case 'ICL':
@@ -354,7 +375,6 @@ const insertObjectToSql = async(typeData,object) => {
                     // Execute the stored procedure
                     result = await request.execute('uspInsertIntoClient');
                     ClientId = result.recordsets[0][0].ClientId
-                    // console.log(JSON.stringify(ClientId));
                     break;
                 case 'ICA':
                     // Add parameters to the request
@@ -369,9 +389,6 @@ const insertObjectToSql = async(typeData,object) => {
                     // Execute the stored procedure
                     result = await request.execute('uspInsertIntoCustomerAddress');
                     Id = result.recordsets[0][0].Address;
-                    // console.log('Address Id............   \n'+JSON.stringify(result));
-
-                    // console.log('Address Id............   \n'+addrId);
                     break;
                 case 'ICC':
                     // Add parameters to the request
@@ -385,8 +402,6 @@ const insertObjectToSql = async(typeData,object) => {
 
                     result = await request.execute('uspInsertIntoClientContact');
                     contactId = result.recordsets[0][0].ContactId;
-                    // console.log('Contact Id............   \n'+contactId);
-
                     break;
                 case 'CQ':
                     // Input parameters for the stored procedure
@@ -404,35 +419,38 @@ const insertObjectToSql = async(typeData,object) => {
                     request.input('ContactPreference', sql.NVarChar, object.ContactPreference);
                     request.input('Extension', sql.NVarChar, object.Extension);
 
-                    // console.log('THe request object...........              \n'+request);
                     result = await request.execute('uspInsertIntoQuoteInformation');
                     Id = result.recordsets[0][0].Id;
-// console.log("THIS IS HTE ID    \n"+Id);
                     break;
+                case 'CA':
+                    // Input parameters for the stored procedure
+                    request.input('CompanyName', sql.NVarChar, object.CompanyName);
+                    request.input('FirstName', sql.NVarChar, object.FirstName);
+                    request.input('LastName', sql.NVarChar, object.LastName);
+                    request.input('EmailAddress', sql.NVarChar, object.EmailAddress);
+                    request.input('BusinessPhone', sql.NVarChar, object.BusinessPhone);
+                    request.input('Description', sql.NVarChar, object.Description);
+                    request.input('Extension', sql.NVarChar, object.Extension);
+
+                    result = await request.execute('uspInsertIntoClientAssist');
+                    Id = result.recordsets[0][0].Id;
+                    break;
+    
                 default:
                     break;
             }
         }
-        // Close the database connection
-        // await sql.close();
-        // Return success message or any other data
-        // return await result;
         return Id;
-        //result.recordsets[0][0];
-
     }catch(err){
-        console.log('an error has occurred     '+err);
-    }finally{
-        // await clientPool.close();
+        await logSiteError(err);
+        throw err;
     }
-    // return await result.recordsets[0][0];
 }
 
 const insertAccountDetail = async(frnData) => {
     await clientPool.connect();
     // Connect to the database
     const request = await clientPool.request();
-    console.log('INSERTING ACCOUNT DETAILS \n'+JSON.stringify(frnData));
 
     try {
         // Add input parameters for each value
@@ -454,11 +472,10 @@ const insertAccountDetail = async(frnData) => {
         request.input('ClientLogId', sql.Int, frnData.clientId);
 
         const result = await request.execute('uspInsertClientAndContactDetails');
-        console.log('RESULTS FROM INSERTING CLIENT ACCOUNT DETAIL \n'+result.recordset.map(item => item.Id));
-
         return result.recordset.map(item => item.Id);
-    } catch (error) {
-        console.log('ERROR INSERTING ACCOUNT DATA \n'+error);
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
 }
 
@@ -466,8 +483,9 @@ const updateSqlObject = async(type,params) => {
     let results;
     try {
 
-    } catch (error) {
-        
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
 
 }
@@ -482,17 +500,15 @@ const resetPass = async(username, newpass) => {
         // let oldPass = JSON.parse(resJson.recordsets[0][0].ClientPass).map(item => item.userPassword);
 
         const encryptedPassword = await encryptPassword(newpass);
-        console.log('ENCRYPTED PASS     \n'+encryptedPassword);
-        
+       
         request.input('UserEmail', sql.VarChar, username);
         request.input('NewUserPassword', sql.VarChar, encryptedPassword);
         const result = await request.execute('uspUpdateClientLoginPassByEmail');
-        console.log('RESULTS     \n'+JSON.stringify(result));
         return result.recordsets[0][0].ID; 
-    } catch (error) {
-        console.log('ERROR     \n'+error);
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
-
 }
 
 const getClientPassword = async(email) => {
@@ -504,8 +520,9 @@ const getClientPassword = async(email) => {
         request.input('username', sql.VarChar, email);
         const result = await request.execute('uspGetClientPasswordByUserName');
         return JSON.parse(result.recordsets[0][0].ClientPass).map(item => item.userPassword);
-    } catch (error) {
-        console.log('ERROR                \n'+error);
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
 }
 
@@ -515,16 +532,13 @@ const insertClientLogin = async(username,password) => {
     const request = await clientPool.request();
     try{
         const encryptedPassword = await encryptPassword(password);
-console.log('ENCRYPTED PASS     \n'+encryptedPassword);
         request.input('username', sql.VarChar, username);
         request.input('userpassword', sql.VarChar, encryptedPassword);
         const result = await request.execute('uspInsertIntoClientLogin');
-        // console.log(`User ${Id} inserted successfully.`);
-        //res[0].SpecOfferByDate).map(item => item.OfferEndDate);
-        console.log(result.recordset.map(item => item.Id));
         return result.recordset.map(item => item.Id);
-    } catch (error) {
-        console.error('Error inserting user:', error);
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
 }
 
@@ -546,8 +560,8 @@ const authenticateUser = async(username,password) => {
         if(isMatch){
             return getClientIdByEmail(username);
         }
-    } catch (error) {
-        console.error('Error authenticating user:', error);
+    } catch (err) {
+        await logSiteError(err);
         return 0;
     }
 }
@@ -560,7 +574,7 @@ const getAdmin = async() =>{
         result  = await request.query('uspGetWebsiteLogData');
     }catch(err)
     {
-        console.error("an error occurred while trying to connect ot the db server  "+err)
+        await logSiteError(err);
     }finally{
         await adminPool.close();
         return  await result;
@@ -569,7 +583,6 @@ const getAdmin = async() =>{
 
 const logLogData = async(log) => {
 
-    // console.log("LOG DATA \n\n"+log);
     // Connect to the database
     await adminPool.connect()
     const request = await adminPool.request();
@@ -588,14 +601,31 @@ const logLogData = async(log) => {
             request.input('QueryString', sql.VarChar(500), JSON.stringify(log.QueryString));
             
             result  = await request.execute('uspInsertWebsiteLog');
-    } catch (error) {
-        console.log('Error has occurred   '+error);
+            return await result.recordsets[0][0];
+
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
-    finally{
-        // await adminPool.close();
-        // return await result;
+    // finally{
+    //     await adminPool.close();
+    //     return await result.recordsets[0][0];
+    // }
+}
+
+const logSiteError = async(errObj) => {
+    await adminPool.connect()
+    const request = await adminPool.request();
+    try {
+        request.input('ErrorCode', sql.Int, errObj.code);
+        request.input('ErrorMessage', sql.VarChar(25), errObj.message);
+        request.input('ErrorDetails', sql.VarChar(255), errObj.stack.toString());
+        
+        await request.execute('uspInsertWebsiteErrorLog');
+
+    } catch (err) {
+        console.log('Error \n'+err);
     }
-    return await result.recordsets[0][0];
 }
 
 const insertVisit = async(IPAddress,PageVisited) => {
@@ -606,22 +636,33 @@ const insertVisit = async(IPAddress,PageVisited) => {
         request.input('IPAddress', sql.VarChar(50), IPAddress);
 
         result  = await request.execute('uspInsertWebSiteVisit');
-        // console.log(result.recordsets[0][0].LogId);
-    } catch (error) {
-        console.log('Error in inserting visit   \n'+error);
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
     }
 
 }
 
 // Function to encrypt the password
 async function encryptPassword(password) {
+   try {
     const saltRounds = 10; // Number of salt rounds for bcrypt
     return bcrypt.hash(password, saltRounds);
+
+   } catch (err) {
+    await logSiteError(err);
+    throw err;
+   }
 }
 // Function to decrypt the password
 async function decryptPassword(encryptedPassword, userPassword) {
-    let answer = await bcrypt.compare(userPassword, encryptedPassword);
-    return answer;
+    try {
+        let answer = await bcrypt.compare(userPassword, encryptedPassword);
+        return answer;
+    } catch (err) {
+        await logSiteError(err);
+        throw err;
+    }
     //bcrypt.compare(userPassword, encryptedPassword);
 }
 
@@ -634,8 +675,8 @@ async function getClientIdByEmail(username){
         const result = await request.execute('uspGetClientIdByEmail');
         const clientId = result.recordsets[0];
         return JSON.stringify(clientId[0].ClientId);
-    } catch (error) {
-        console.error('Error authenticating user:', error);
+    } catch (err) {
+        await logSiteError(err);
         return 0;
     }
 }
@@ -654,6 +695,7 @@ module.exports = {
     insertClientLogin,
     insertAccountDetail,
     logLogData,
+    logSiteError,
     resetPass,
     updateSqlObject
 }

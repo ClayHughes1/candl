@@ -140,15 +140,15 @@
                     </div>
                     <div class="row" style="margin-top: 10px;">
                         <!-- <div class="col-xs-2 col-sm-3 col-md-4 col-lg-4 pb-1p ml-12" style="background-color: orange;"></div> -->
-                        <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 pb-1p text-right">
+                        <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8 pb-1p text-right">
                             <a href="#" id="lnkRegister" role="button">Create Account</a>
                         </div>
-                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 pb-1p text-right">
+                        <div class="col-xs-12 col-sm-4 col-md-4 col-lg-2 pb-1p text-right">
                             <a href="#" id="lnkForgot" role="button">Forgot Password</a>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-xs-10 col-sm-12 col-md-12 col-lg-12 text-right">
+                        <div class="col-xs-10 col-sm-12 col-md-12 col-lg-10 text-right">
                             <button id="btnLogin" class="btn btn-primary" type="submit">Login</button>
                         </div>
                     </div>
@@ -845,6 +845,7 @@ let data;
 let hostRoot = window.location.protocol + "//" + window.location.hostname + (window.location.port ? ':' + window.location.port : '');	
 
 $(window).bind('load',function(){
+    getVisit();
     $('#payModal').modal('show');
     $('#divBltn').css('display','none');
     getCountryData();
@@ -1613,6 +1614,24 @@ function checkUrl(url){
     }
 
 }
+
+function getVisit(){
+    fetch('/api/postVisit', {
+        method: 'POST' // Assuming you're sending a POST request
+    })
+    .then(response => {
+        if (response.ok) {
+            console.log('Visit recorded successfully');
+            // Perform any additional actions if needed
+        } else {
+            console.error('Failed to record visit');
+        }
+    })
+    .catch(error => {
+        console.error('Error recording visit:', error);
+    });
+}
+
 
 // $('#getClientProfileBtn').click(function() {
 //     // AJAX POST request to fetch client profile

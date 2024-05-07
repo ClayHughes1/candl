@@ -257,7 +257,7 @@
 			<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 				<div class="row">
 					<div class="col-xs-8 col-sm-8 col-md-12 col-lg-8">
-						<form class="col-sm-12 col-md-12 col-lg-12" method="post" action="/api/requsthelp" id="frmHelp" style="padding: 5px;">
+						<form class="col-sm-12 col-md-12 col-lg-12" method="post" action="" id="frmHelp" style="padding: 5px;">
 							<!-- <div class="row pb-10">
 								<div class="col-xs-12 col-sm-12 col-md-4 col-lg-3">
 									<label for="selService" class="col-form-label">Type of Service</label>
@@ -469,6 +469,7 @@
 							<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
 								<p class="f-2 no-mp">GET</p>
 								<p class="no-mp f-5 font-bold font-courier font-red">30%</p>
+								<p>Offer expires 08/01/2024</p>
 								<p>Off Web and Mobile design services. <a href="#" id="lnkRequest" aria-label="Service request" title="Service request" role="button">Request Service</a></p>
 							</div>
 						</div>
@@ -713,7 +714,7 @@
 			var formId = $(this).attr('id'); // Get the ID of the submitted form
 			var divToHide;
 			// Hide the div based on the form ID
-			divToHide =  formId === 'frmQoute'? 'quote': 'divRequestHelp'
+			divToHide =  formId === 'frmQoute'? 'quote': 'divReqeustHelp';
 			$.ajax({
 				type: 'POST',
 				url: url,
@@ -723,9 +724,11 @@
 					$('#divNotify').css('display', 'inline-block');
 					$(':input tel textarea email', $(this)).val('').removeAttr('checked').removeAttr('selected');
 					$('#'+divToHide).css('display', 'none');
+					$('#'+formId)[0].reset();
 				},
 				error: function(xhr, status, error) {
-					console.error('Error:', error);
+					alert('AN ERROR HAS OCCURRED');
+					console.error('Error:', error,'  status  \n',status,'   xhr   \n',xhr);
 				}
 			});
 		});
@@ -744,7 +747,7 @@
 		})
 		.then(response => {
 			if (response.ok) {
-				console.log('Visit recorded successfully');
+				return;
 				// Perform any additional actions if needed
 			} else {
 				console.error('Failed to record visit');

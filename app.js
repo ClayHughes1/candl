@@ -44,11 +44,6 @@ app.use(cookieParser());
 
 const currentDate = new Date();
 
-// const year = currentDate.getFullYear();
-// const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Adding 1 to month as it's zero-based
-// const day = String(currentDate.getDate()).padStart(2, '0');
-// const formattedDate = `${year}-${month}-${day}`;
-
 //CHAT
 const formattedDate = currentDate.toISOString().split('T')[0];
 
@@ -62,6 +57,12 @@ app.use(session({
 // Initialize passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+//Error handling
+app.use((err, req, res, next) => {
+    // Handle errors here
+    res.status(500).send('Internal Server Error');
+});
 
 
 //Get CSR and SSL 
@@ -112,9 +113,6 @@ passport.deserializeUser((user, done) => {done(null, user);});
 // Route to start Google OAuth authentication
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
-// me.validateEmail('test123456789@gmaikl.com').then((res) => {
-//     console.log('RESULTS            \n'+res);
-// });
 
 //CHAT
 // app.get('/auth/google/callback',
@@ -128,7 +126,7 @@ app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'em
 app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/login' }),
     (req, res) => {
-        console.log('successfully logged in...........');
+        // console.log('successfully logged in...........');
         // Successful authentication, redirect to home page or any other page
         res.redirect('/admin/dashboard.html');
     }
@@ -154,17 +152,26 @@ app.get('/api/client/logout', (req, res) => {
     req.logout(function(err) {
         if (err) { return next(err); }
         res.redirect('/clientportal.html');
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        res.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
 app.get('/',function(req,res){
-    const  requestData = createLogObj(req);
-    dbOps.logLogData(requestData);
-    res.render('admin.html');
+    try {
+        const  requestData = createLogObj(req);
+        dbOps.logLogData(requestData);
+        res.render('admin.html');
+    } catch (error) {
+        // console.log('ERROR   \n'+error);
+        dbOps.logSiteError(err);
+        res.status(500).json({error: 'An error occurred while retireveing this page. Please try again later. '})
+    }
 });
 
 app.get('/admin/',function(req,res){
-    console.log('here....................');
+    // console.log('here....................');
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
     res.redirect('dashboard.html');
@@ -194,7 +201,7 @@ app.get('/api/cookie',function(req, res){
     return res.send('cookie has been set!');
 });
 
-app.get('/api/getchartdata?',function(req,results){
+app.get('/api/getchartdata?',function(req,resp){
     let chartname = req.query.chartname;
     let visitsData = [];
     const  requestData = createLogObj(req);
@@ -207,8 +214,11 @@ app.get('/api/getchartdata?',function(req,results){
     //             return res;
     //         }).then((res) =>{
     //             visitsData = res;
-    //             results.json(visitsData);
-    //         });
+    //             resp.json(visitsData);
+    //         }).catch((err) => {
+                //     dbOps.logSiteError(err);
+                //     resp.status(500).json({ error: 'Internal Server Error' });
+                // });
     //     }
     //     default: break;
     // }
@@ -230,10 +240,13 @@ app.get('/api/getquotedata',function(req,response){
     //     .then(() => {
     //         response.json(qouteData);
     //     });
+    // }).catch((err) => {
+    //     dbOps.logSiteError(err);
+    //     response.status(500).json({ error: 'Internal Server Error' });
     // });
 });
 
-app.get('/api/freeservicedata',function(req,results){
+app.get('/api/freeservicedata',function(req,resp){
     let freeserv = [];
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
@@ -242,28 +255,34 @@ app.get('/api/freeservicedata',function(req,results){
     //     return res;
     // }).then((res) =>{
     //     freeserv = res;
-    //     results.json(freeserv);
+    //     resp.json(freeserv);
+    // }).catch((err) => {
+    //     dbOps.logSiteError(err);
+    //     resp.status(500).json({ error: 'Internal Server Error' });
     // });
 });
 
 app.get('/api/instagram',function(req,response){
-    console.log('sending to instagram...............    '+req);
+    // console.log('sending to instagram...............    '+req);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData).then((res) =>{
         response.redirect(process.env.INST_URL);
     }).catch((err) => {
-        console.log("ERROR ..................  \n"+err);
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
 app.get('/api/facebook',function(req,response){
-    console.log('sending to facebook...............    '+req);
-    console.log('URL..................'+process.env.INSTAGRAM_URL);
+    // console.log('sending to facebook...............    '+req);
+    // console.log('URL..................'+process.env.INSTAGRAM_URL);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData).then((res) =>{
         response.redirect(process.env.FACEOOK_PAGE);
     }).catch((err) => {
-        console.log("ERROR ..................  \n"+err);
+        // console.log('AN ERROR ORRCURRED   \n'+err);
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
@@ -274,7 +293,8 @@ app.get('/api/linkedin',function(req,response){
     dbOps.logLogData(requestData).then((res) =>{
         response.redirect(process.env.LINKEDIN_URL);
     }).catch((err) => {
-        console.log("ERROR ..................  \n"+err);
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
@@ -286,7 +306,7 @@ app.get('/api/check-date', async(req, response) => {
     let isBeforeCutoff;
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
-
+    // console.log('CHECKGIN DATE...............    ');
     dbOps.getDataByType('SODR',{StartDate:startDate,EndDate:endDate})
     .then((res) => {
        return JSON.parse(res[0].SpecOfferByDate).map(item => item.OfferEndDate);
@@ -300,10 +320,12 @@ app.get('/api/check-date', async(req, response) => {
                 response.json(isBeforeCutoff);
             }
         } catch (error) {
-            console.log('ERROR HAS OCCURRED \n'+error);
+            dbOps.logSiteError(err);
+            response.status(500).json({ error: 'Internal Server Error' });
         }
     }).catch((err) => {
-        console.log(err);
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
@@ -317,7 +339,8 @@ app.post('/api/postVisit', (req,response) => {
     dbOps.insertVisit(ipAddress,pageVisited).then((res)=>{
         response.status(200).json({ success: true, message: 'Visit recorded successfully.' });
     }).catch((err) => {
-        console.log('ERROR OCCURRED IN FUNCTION CALL  \n'+err);
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
 });
 
@@ -327,7 +350,7 @@ app.get('/api/getdatarequest?',function(req,results){
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
 
-    console.log('id passed in header..........  '+id);
+    // console.log('id passed in header..........  '+id);
 
 });
 
@@ -339,32 +362,40 @@ app.get('/clientportal',function(req,resp){
     if (referrer && referrer.includes('passreset')) {
         const parsedUrl = new URL(referrer);
         const email = parsedUrl.searchParams.get('email');
-        console.log('Email:', email);
+        // console.log('Email:', email);
         dbOps.getDataByType('CBE',{email:email}).then((res) => {
-            console.log('RESPONSE \n'+res[0].ClientId);
+            // console.log('RESPONSE \n'+res[0].ClientId);
             resp.redirect('clientportal.html?clientid='+res[0].ClientId);
 
+        }).catch((err) => {
+            dbOps.logSiteError(err);
+            resp.status(500).json({ error: 'Internal Server Error' });
         });
     } else {
-        console.log('No referrer provided or referrer does not contain code');
+        resp.redirect('clientportal.html?clientid=0');
+
+        // console.log('No referrer provided or referrer does not contain code');
         // Handle case where no referrer is provided or referrer does not contain 'code'
     }
 
     // resp.redirect('clientportal.html');
 });
 
-app.get('/api/passreset?',function(req,res){
+app.get('/api/passreset?',function(req,resp){
     const email = req.query.email;
     // console.log('GETTING PASSWORD REST REQUEST  \n'+email);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
     // console.log(email);
 
-    me.sendPassReset(email).then((req) =>{
-        console.log('SENT PASSWORD RESET EMAIL   \n'+res);
+    me.sendPassReset(email).then((res) =>{
+        // console.log('SENT PASSWORD RESET EMAIL   \n'+res);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).json({ error: 'Internal Server Error' });
     });
     let redUrl = '/clientportal/passreset.html?email='+email;
-    console.log('REDIRECT URL       \n'+redUrl);
+    // console.log('REDIRECT URL       \n'+redUrl);
     res.redirect(redUrl);
     //'/clientportal/passreset.html?email=${email}'
 });
@@ -372,26 +403,24 @@ app.get('/api/passreset?',function(req,res){
 // Define your API endpoint
 app.get('/api/getcountrydata', async (req, resp) => {
     let nameArr = [];
-    try {
-        // Call dbOps.getCountryData to fetch country data
-        await dbOps.getDataByType('COU').then((res) => {
-            return res;
-        }).then((res) => {
-            for (const key in res[0]) {
-                let a = JSON.parse(res[0][key]);
-                for (var b in a)
-                {
-                    let ccode = a[b].CountryCode;
-                    let cname = a[b].CountryName
-                    nameArr.push(cname);
-                }
-            }      
-            resp.json(nameArr);
-        });
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
+    // Call dbOps.getCountryData to fetch country data
+    await dbOps.getDataByType('COU').then((res) => {
+        return res;
+    }).then((res) => {
+        for (const key in res[0]) {
+            let a = JSON.parse(res[0][key]);
+            for (var b in a)
+            {
+                let ccode = a[b].CountryCode;
+                let cname = a[b].CountryName
+                nameArr.push(cname);
+            }
+        }      
+        resp.json(nameArr);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).json({ error: 'Internal Server Error' });
+    });
 });
 
 app.get('/error',(req,res) => res.send('Eror logging in to Facebook'));
@@ -399,7 +428,7 @@ app.get('/error',(req,res) => res.send('Eror logging in to Facebook'));
 //POST REQUESTS
 app.post('/api/validatelogin',function(req,res){
     const { userid, password} = req.body;
-    console.log(userid+'    '+password);
+    // console.log(userid+'    '+password);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
     res.redirect('/admin/dashboard.html');
@@ -407,41 +436,27 @@ app.post('/api/validatelogin',function(req,res){
 
 app.post('/api/clientlogin',function(req,resp){
     const { userid, userpassword} = req.body;
-    console.log(userid+'    '+userpassword);
+    // console.log(userid+'    '+userpassword);
     const  requestData = createLogObj(req);
 
     dbOps.logLogData(requestData);
 
     dbOps.authenticateUser(userid,userpassword).then((res) => {
-        console.log('RESPONSE \n'+res);
+        // console.log('RESPONSE \n'+res);
         if (res){
             resp.json({loggedIn: true,clientId: res});
         } else {resp.json({loggedIn: false,clientId: 0})};
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
-
-
-    // dbOps.getClientPassword(userid).then((res) => {
-    //     return res;
-    // }).then((res) => {
-    //     console.log(res[0]);
-    //     dbOps.decryptPassword(res[0].toString(),password).then((res) => {
-    //         console.log('VALUE              \n'+res);
-    //     }).catch((err) => {
-    //         console.log("ERROR "+err);
-    //     });
-    // }).catch((error) => {
-    //     console.log("ERROR "+error);
-    // });
-
-
-    // res.redirect('/admin/dashboard.html');
 });
 
 app.post('/api/createlogin',function(req,response){
     const { cuserid,cnfemail, cpass,cnfpass } = req.body;
 
     const  requestData = createLogObj(req);
-    console.log('REQUEST DATA  \n'+JSON.stringify(requestData));
+    // console.log('REQUEST DATA  \n'+JSON.stringify(requestData));
     dbOps.logLogData(requestData).then(() => {
         return;
     });
@@ -452,7 +467,8 @@ app.post('/api/createlogin',function(req,response){
         response.json({message: 'success',Id:res});
     })
     .catch((err) => {
-        console.log('ERROR INSRTING NEW ACCOUNT   \n'+err);
+        dbOps.logSiteError(err);
+        response.status(500).send('Internal Server Error');
     });
 });
 
@@ -462,26 +478,22 @@ app.post('/api/passreset',function(req,resp){
     dbOps.logLogData(requestData);
 
     dbOps.getDataByType('CBE',{email:email.email}).then((res) => {
-        console.log('THE RESULTS CLIENT ID \n'+res[0]);
+        // console.log('THE RESULTS CLIENT ID \n'+res[0]);
         if( typeof res[0] === 'undefined'){
             resp.json({message: 'failed'});
         }
         else {
-            console.log('EMAIL \n'+email.email)
+            // console.log('EMAIL \n'+email.email)
             me.sendPassReset(email.email).then((req) =>{
-                console.log('SENT EMAIL  \n'+res);
+                // console.log('SENT EMAIL  \n'+res);
                 resp.json({message: 'An email has been sent to the provided email. Please check your email for password reset instructions.'});
-                console.log('SENT PASSWORD RESET EMAIL   \n'+res);
+                // console.log('SENT PASSWORD RESET EMAIL   \n'+res);
             });
         }
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
-
-    // console.log(useremail);
-
-    // me.sendPassReset(useremail).then((req) =>{
-    //     console.log('SENT PASSWORD RESET EMAIL   \n'+res);
-    // });
-    // res.redirect('/admin/dashboard.html');
 });
 
 app.post('/api/submitquoterequest',async(req,response) => {
@@ -492,7 +504,6 @@ app.post('/api/submitquoterequest',async(req,response) => {
     let Id;
     let logId;
 
-    try {
 
     const  requestData = createLogObj(req);
 
@@ -514,39 +525,50 @@ app.post('/api/submitquoterequest',async(req,response) => {
 
     let msg = [{message:'Service qoute request has been sent successfully..  '}]
 
-        if(emailRegex.test(qemail))
-        {
-            console.log('inserting qoute......................................................');
-            dbOps.insertObjectToSql('CQ',qouteObj)
-            .then((res) =>{
-                console.log('RESULTS FROM INSERTING THE DATA INTO THE TABLE \n'+res);
-                if(!isNaN(res)){
-                    Id = res;
-                    me.qouteMail(qemail).then((req) =>{
-                    }).then(() => {
-                        me.sendEmailToCompAccount(qouteObj,'qoute',res);
+    if(emailRegex.test(qemail))
+    {
+        // console.log('inserting qoute......................................................');
+        dbOps.insertObjectToSql('CQ',qouteObj)
+        .then((res) =>{
+            console.log('RESULTS FROM INSERTING THE DATA INTO THE TABLE \n'+res);
+            if(!isNaN(res)){
+                Id = res;
+                me.sendQouteMail(qemail).then((req) =>{
+                    dbOps.logLogData(requestData).catch((err) => {
+                        response.status(600).send('Internal Server Error Has Occurred');
                     });
-                }else {
-                    console.log('sending email stuff');
-                    msg = [{message:'There is already a record for this item..  '}]
-                }
+                }).then(() => {
+                    me.sendEmailToCompAccount(qouteObj,'qoute',res).catch((err) => {
+                        response.status(700).send('Internal Server Error Has Occurred');
+                    });
+                }).catch((err) => {
+                    dbOps.logSiteError(err);
+                    response.status(100).send('Internal Server Error Has Occurred \n'+err);
+                });
+            }else {
+                // console.log('sending email stuff');
+                msg = [{message:'There is already a record for this item..  '}]
+            }
+        })
+        .then(() => {
+            dbOps.logLogData(requestData)
+            .then((res) => {
+                logId = res.LogId;
             })
             .then(() => {
-                dbOps.logLogData(requestData)
-                .then((res) => {
-                        logId = res.LogId;
-                })
-                .then(() => {
-                    // console.log('QOUTE ID2...................  \n'+Id);
-                    // console.log('LOG ID2...................  \n'+logId);
-                    response.json(msg);
-                });
+                // console.log('QOUTE ID2...................  \n'+Id);
+                // console.log('LOG ID2...................  \n'+logId);
+                response.json(msg);
+            }).catch((err) => {
+                dbOps.logSiteError(err);
+                response.status(200).send('Internal Server Error Once Again\n'+err+'  \n'+JSON.stringify(requestData));
             });
-        }
-        console.log('MESSAGE....................           \n'+msg);
-    } catch (error) {
-        console.log('Error '+error)
+        }).catch((err) => {
+            dbOps.logSiteError(err);
+            response.status(300).send('Internal Server Error For The Last TIme \n'+err);
+        });
     }
+    // console.log('MESSAGE....................           \n'+msg);
 });
 
 app.post('/api/requsthelp',function(req,response){
@@ -569,21 +591,39 @@ app.post('/api/requsthelp',function(req,response){
         recipientName: hFirst +' '+ hLast
     };
 
-    try {
-        me.sendConHelpEmail(hEmail,recip).then((req) =>{
-            me.sendEmailToCompAccount(helpObj,'Help',hCompName.toString());
-        }).then(() => {
-            dbOps.logLogData(requestData)
-            .then(() => {
-                response.json(msg);
+    dbOps.insertObjectToSql('CA',helpObj).then((res) => {
+        // console.log('RESULTS FROM INSERTING THE DATA INTO THE TABLE \n'+res);
+        if(!isNaN(res)){
+
+             me.sendConHelpEmail(hEmail,recip).then((req) =>{
+                 me.sendEmailToCompAccount(helpObj,'Help',hCompName.toString());
+             }).then(() => {
+                 dbOps.logLogData(requestData)
+                 .then(() => {
+                    response.json(msg);
+                 }).catch((err) => {
+                    dbOps.logSiteError(err);
+                    response.status(500).send('Internal Server Error again \n'+err);
+                });
+             }).catch((err) => {
+                dbOps.logSiteError(err);
+                response.status(500).send('Internal Server Error one more time\n'+err);
             });
-        });
-    } catch (error) {
-       console.log('AN ERROR HAS OCCURRED.............  \n'+error); 
-    }
+        }else {
+             dbOps.logLogData(requestData)
+             .then(() => {
+                //  console.log('sending email stuff');
+                msg = [{message:'There is already a record for this item..  '}]
+                response.json(msg);
+             }).catch((err) => {
+                dbOps.logSiteError(err);
+                response.status(500).send('Internal Server Error last time \n'+err);
+            });
+        }
+    });
 });
 
-app.post('/api/registerfree',function(req,res) {
+app.post('/api/registerfree',function(req,resp) {
     let aClient;
     let subject = 'Free service applicant';
     let option = 'free';
@@ -595,23 +635,22 @@ app.post('/api/registerfree',function(req,res) {
     const lastname = req.body.conlastname;
     const compname = req.body.compname;
     aClient = new client(firstname,lastname,compname,email,phone);
-    try{
-        me.createBody(aClient).then(res =>{
-            let htmlBody = res;
-            console.log('results from create body    '+res);
-            me.mailOptions(htmlBody,subject);
-        }).then((err) => {
-            if(!err){
-              fm.createData(aClient).then((res,err) =>{
-                fm.writeToRegister(res);
-              });
-            }
-        }).then(() => {
-            dbOps.logLogData(requestData);
-        });
-    }catch(err){
-        console.log('error    '+err);
-    }
+    me.createBody(aClient).then(res =>{
+        let htmlBody = res;
+        // console.log('results from create body    '+res);
+        me.mailOptions(htmlBody,subject);
+    }).then((err) => {
+        if(!err){
+            fm.createData(aClient).then((res,err) =>{
+            fm.writeToRegister(res);
+            });
+        }
+    }).then(() => {
+        dbOps.logLogData(requestData);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
+    });
 });
 
 app.post('/api/updatepass',function(req,resp){
@@ -621,12 +660,13 @@ app.post('/api/updatepass',function(req,resp){
     dbOps.logLogData(requestData);
 
     dbOps.resetPass(resemail,cnfresetpass).then((res) => {
-        console.log('RESET CONPLETE   \n'+res);
+        // console.log('RESET CONPLETE   \n'+res);
         if(typeof res !== undefined){
             resp.json({message: 'success'});
         }
-    }).catch((erro) => {
-        console.log('ERROR \n'+err);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
 });
 
@@ -637,12 +677,12 @@ app.post('/api/getclientprofile', (req, resp) => {
     dbOps.getDataByType('CPBCID',{ClientId:clientId}).then((res) => {
         return res;
     }).then((res) =>{
-        console.log("res                      \n"+JSON.stringify(res));
+        // console.log("res                      \n"+JSON.stringify(res));
         resp.json(res);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
-    
-    // Sending sample data for demonstration
-    // res.json(sampleData);
 });
 
 //getclientbillinginfo
@@ -653,8 +693,11 @@ app.post('/api/getclientbillinginfo', (req, resp) => {
         let parsObj = JSON.parse(res[0].BillingInfo);
         return parsObj[0];
     }).then((res) =>{
-        console.log("res                      \n"+JSON.stringify(res));
+        // console.log("res                      \n"+JSON.stringify(res));
         resp.json(res);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
 });
 
@@ -682,24 +725,31 @@ app.post('/api/getclientinvoicedetailbyid', (req, resp) => {
             return invObj;
         }).then((res) =>{
             resp.json(res);
+        }).catch((err) => {
+            dbOps.logSiteError(err);
+            resp.status(500).send('Internal Server Error');
         });
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
 });
 
 app.post('/api/createacctdetail',(req,resp) => {
-    console.log('RESPONSE BODY   \n'+JSON.stringify(req.body));
+    // console.log('RESPONSE BODY   \n'+JSON.stringify(req.body));
     // let formData = req.body;
 
     dbOps.insertAccountDetail(req.body).then((res) => {
-        console.log('RESULTS AFTER INSRTING DETAILS \n'+res);
+        // console.log('RESULTS AFTER INSRTING DETAILS \n'+res);
         if(res > 0){resp.json({message: 'success'})};
-    }).catch((error) => {
-        console.log('ERROR \n'+error);
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        resp.status(500).send('Internal Server Error');
     });
 });
 
 app.post('/api/submitpayment', (req,resp) => {
-    console.log('FORM DATA \n'+JSON.stringify(req.body));
+    // console.log('FORM DATA \n'+JSON.stringify(req.body));
 });
 
 function createLogObj(req){
@@ -728,30 +778,10 @@ function parseFormData(formData) {
         // Add the key-value pair to the parsed data object
         parsedData[key] = value;
     });
-console.log(JSON.stringify(parsedData));
+// console.log(JSON.stringify(parsedData));
     // Return the parsed form data
     return parsedData;
 }
-
-// const testObject = {
-//     FirstName: "John",
-//     LastName: "Doe",
-//     CompanyName: "ABC Company",
-//     ClientContactId: 123,
-//     EmailAddress: "john@example.com",
-//     BusinessPhone: "123-456-7890",
-//     PersonalPhone: "987-654-3210",
-//     CellPhone: "123-456-7890",
-//     ContactPreference: "Email",
-//     Extension: "1234",
-//     AddressLine1: "123 Main St",
-//     AddressLine2: "Apt 101",
-//     City: "Anytown",
-//     State: "CA",
-//     ZipCode: "12345",
-//     CountryCodeId: 1
-// };
-
 
 // dbOps.getDataByType('CPBCID',{ClientId:2}).then((res) => {
 //     console.log("res                      \n"+JSON.stringify(res));

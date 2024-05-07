@@ -11,15 +11,5 @@
             "url": "http://localhost:4000",
             "webRoot": "${workspaceFolder}"
         }
-
-        // {
-        //     "type": "node",
-        //     "request": "launch",
-        //     "name": "Launch Program",
-        //     "skipFiles": [
-        //         "<node_internals>/**"
-        //     ],
-        //     "program": "${file}"
-        // }
     ]
 }

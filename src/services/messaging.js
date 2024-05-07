@@ -1,6 +1,7 @@
 require('dotenv').config();
 const nodemailer = require('nodemailer');
 const path = require('path');
+// const dbOps = require('././data/dbOps');
 
 let htmlBody;
 
@@ -30,8 +31,6 @@ const qouteEmailBody = `
 `;
 
 const conEmailBody = async(rqstor) => {
-  console.log('THE RECIPIENT             \n'+rqstor);
-  
   const confEmail = `
   <!DOCTYPE html>
   <html lang="en">
@@ -85,14 +84,6 @@ const crspEmailBody = async(mssgParams,qouteId,type) => {
   `;
   return compEmailBody;
 }
-
-// "CompanyName": hCompName,
-// "FirstName": hFirst,
-// "LastName": hLast,
-// "EmailAddress": hEmail,
-// "BusinessPhone": hPhone,
-// "Extension":hExt,
-// "Description":hDesc,
 
 const crspEmailAssistBody = async(mssgParams,senderName) => {
   let compEmailBody = 
@@ -153,6 +144,9 @@ const sendQouteMail = async (emailTo) => {
           path: 'public/images/C.jpg',
           contentType: 'application/jpg'
         }]
+      }).catch((err) => {
+          dbOps.logSiteError(err);
+          response.status(500).json({ error: 'Internal Server Error' });
       });
       console.log(`Email sent successfully. Message ID: ${info.messageId}`);
     } catch (error) {
@@ -179,6 +173,9 @@ const sendConHelpEmail = async(emailTo,recipient) => {
         path: 'public/images/C.jpg',
         contentType: 'application/jpg'
       }]
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
     console.log(`Email sent successfully. Message ID: ${info.messageId}`);
   } catch (error) {
@@ -205,11 +202,13 @@ const sendEmailToCompAccount = async(inpValues,reqType,keyVal) => {
         path: 'public/images/C.jpg',
         contentType: 'application/jpg'
       }]
+    }).catch((err) => {
+        dbOps.logSiteError(err);
+        response.status(500).json({ error: 'Internal Server Error' });
     });
   } catch (error) {
     console.error(`Error sending email: ${error.message}`);
   }
-
 }
 
 const sendPassReset = async(emailTo) => {
@@ -225,7 +224,8 @@ const sendPassReset = async(emailTo) => {
     text: 'You have requested to reset your password.', // Plain text body
     html: htmlBody
   }).catch((err) => {
-    console.log('ERROR       '+err);
+      dbOps.logSiteError(err);
+      response.status(500).json({ error: 'Internal Server Error' });
   });
   console.log('INFO              \n'+JSON.stringify(info));
 
