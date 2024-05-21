@@ -383,20 +383,30 @@ app.get('/clientportal',function(req,resp){
 
 app.get('/api/passreset?',function(req,resp){
     const email = req.query.email;
-    // console.log('GETTING PASSWORD REST REQUEST  \n'+email);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
-    // console.log(email);
 
-    me.sendPassReset(email).then((res) =>{
-        // console.log('SENT PASSWORD RESET EMAIL   \n'+res);
+    dbOps.getDataByType('CBE',email).then((res) => {
+        if(res){
+            me.sendPassReset(email)
+            // .then((res) =>{
+            //     // console.log('SENT PASSWORD RESET EMAIL   \n'+res);
+            // })
+            .catch((err) => {
+                dbOps.logSiteError(err);
+                resp.status(500).json({ error: 'Internal Server Error' });
+            });
+        }
+        else {
+            resp.json({message:'failed'})
+        }
     }).catch((err) => {
         dbOps.logSiteError(err);
         resp.status(500).json({ error: 'Internal Server Error' });
     });
+
     let redUrl = '/clientportal/passreset.html?email='+email;
-    // console.log('REDIRECT URL       \n'+redUrl);
-    res.redirect(redUrl);
+    resp.redirect(redUrl);
     //'/clientportal/passreset.html?email=${email}'
 });
 
@@ -428,7 +438,6 @@ app.get('/error',(req,res) => res.send('Eror logging in to Facebook'));
 //POST REQUESTS
 app.post('/api/validatelogin',function(req,res){
     const { userid, password} = req.body;
-    // console.log(userid+'    '+password);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData);
     res.redirect('/admin/dashboard.html');
@@ -436,13 +445,11 @@ app.post('/api/validatelogin',function(req,res){
 
 app.post('/api/clientlogin',function(req,resp){
     const { userid, userpassword} = req.body;
-    // console.log(userid+'    '+userpassword);
     const  requestData = createLogObj(req);
 
     dbOps.logLogData(requestData);
 
     dbOps.authenticateUser(userid,userpassword).then((res) => {
-        // console.log('RESPONSE \n'+res);
         if (res){
             resp.json({loggedIn: true,clientId: res});
         } else {resp.json({loggedIn: false,clientId: 0})};
@@ -456,7 +463,6 @@ app.post('/api/createlogin',function(req,response){
     const { cuserid,cnfemail, cpass,cnfpass } = req.body;
 
     const  requestData = createLogObj(req);
-    // console.log('REQUEST DATA  \n'+JSON.stringify(requestData));
     dbOps.logLogData(requestData).then(() => {
         return;
     });
@@ -478,16 +484,12 @@ app.post('/api/passreset',function(req,resp){
     dbOps.logLogData(requestData);
 
     dbOps.getDataByType('CBE',{email:email.email}).then((res) => {
-        // console.log('THE RESULTS CLIENT ID \n'+res[0]);
         if( typeof res[0] === 'undefined'){
             resp.json({message: 'failed'});
         }
         else {
-            // console.log('EMAIL \n'+email.email)
             me.sendPassReset(email.email).then((req) =>{
-                // console.log('SENT EMAIL  \n'+res);
                 resp.json({message: 'An email has been sent to the provided email. Please check your email for password reset instructions.'});
-                // console.log('SENT PASSWORD RESET EMAIL   \n'+res);
             });
         }
     }).catch((err) => {
@@ -527,7 +529,6 @@ app.post('/api/submitquoterequest',async(req,response) => {
 
     if(emailRegex.test(qemail))
     {
-        // console.log('inserting qoute......................................................');
         dbOps.insertObjectToSql('CQ',qouteObj)
         .then((res) =>{
             console.log('RESULTS FROM INSERTING THE DATA INTO THE TABLE \n'+res);
@@ -556,8 +557,6 @@ app.post('/api/submitquoterequest',async(req,response) => {
                 logId = res.LogId;
             })
             .then(() => {
-                // console.log('QOUTE ID2...................  \n'+Id);
-                // console.log('LOG ID2...................  \n'+logId);
                 response.json(msg);
             }).catch((err) => {
                 dbOps.logSiteError(err);
@@ -568,7 +567,6 @@ app.post('/api/submitquoterequest',async(req,response) => {
             response.status(300).send('Internal Server Error For The Last TIme \n'+err);
         });
     }
-    // console.log('MESSAGE....................           \n'+msg);
 });
 
 app.post('/api/requsthelp',function(req,response){
@@ -592,9 +590,7 @@ app.post('/api/requsthelp',function(req,response){
     };
 
     dbOps.insertObjectToSql('CA',helpObj).then((res) => {
-        // console.log('RESULTS FROM INSERTING THE DATA INTO THE TABLE \n'+res);
         if(!isNaN(res)){
-
              me.sendConHelpEmail(hEmail,recip).then((req) =>{
                  me.sendEmailToCompAccount(helpObj,'Help',hCompName.toString());
              }).then(() => {
@@ -612,7 +608,6 @@ app.post('/api/requsthelp',function(req,response){
         }else {
              dbOps.logLogData(requestData)
              .then(() => {
-                //  console.log('sending email stuff');
                 msg = [{message:'There is already a record for this item..  '}]
                 response.json(msg);
              }).catch((err) => {
@@ -637,7 +632,6 @@ app.post('/api/registerfree',function(req,resp) {
     aClient = new client(firstname,lastname,compname,email,phone);
     me.createBody(aClient).then(res =>{
         let htmlBody = res;
-        // console.log('results from create body    '+res);
         me.mailOptions(htmlBody,subject);
     }).then((err) => {
         if(!err){
@@ -660,7 +654,6 @@ app.post('/api/updatepass',function(req,resp){
     dbOps.logLogData(requestData);
 
     dbOps.resetPass(resemail,cnfresetpass).then((res) => {
-        // console.log('RESET CONPLETE   \n'+res);
         if(typeof res !== undefined){
             resp.json({message: 'success'});
         }
@@ -673,11 +666,9 @@ app.post('/api/updatepass',function(req,resp){
 // POST route to handle the AJAX request
 app.post('/api/getclientprofile', (req, resp) => {
     const clientId = req.body.clientId; // Assuming the client ID is sent in the request body
-    // You can replace this with your actual data retrieval logic from the database
     dbOps.getDataByType('CPBCID',{ClientId:clientId}).then((res) => {
         return res;
     }).then((res) =>{
-        // console.log("res                      \n"+JSON.stringify(res));
         resp.json(res);
     }).catch((err) => {
         dbOps.logSiteError(err);
@@ -688,12 +679,10 @@ app.post('/api/getclientprofile', (req, resp) => {
 //getclientbillinginfo
 app.post('/api/getclientbillinginfo', (req, resp) => {
     const clientId = req.body.clientId; // Assuming the client ID is sent in the request body
-    // You can replace this with your actual data retrieval logic from the database
     dbOps.getDataByType('BINF',{clientid:clientId}).then((res) => {
         let parsObj = JSON.parse(res[0].BillingInfo);
         return parsObj[0];
     }).then((res) =>{
-        // console.log("res                      \n"+JSON.stringify(res));
         resp.json(res);
     }).catch((err) => {
         dbOps.logSiteError(err);
@@ -713,7 +702,6 @@ app.post('/api/getclientinvoicedetailbyid', (req, resp) => {
 
         invObj.push(jsonObj);
     }).then(() => {
-        // You can replace this with your actual data retrieval logic from the database
         dbOps.getDataByType('BICI',{clientid:clientId}).then((res) => {
             // let parsObj = JSON.parse(res[0].BillInvClientId);
             JSON.parse(res[0].BillInvClientId).forEach(obj => {
@@ -721,7 +709,6 @@ app.post('/api/getclientinvoicedetailbyid', (req, resp) => {
             });
 
             invObj.push(parObj);
-            // console.log(JSON.stringify(invObj));
             return invObj;
         }).then((res) =>{
             resp.json(res);
@@ -736,11 +723,7 @@ app.post('/api/getclientinvoicedetailbyid', (req, resp) => {
 });
 
 app.post('/api/createacctdetail',(req,resp) => {
-    // console.log('RESPONSE BODY   \n'+JSON.stringify(req.body));
-    // let formData = req.body;
-
     dbOps.insertAccountDetail(req.body).then((res) => {
-        // console.log('RESULTS AFTER INSRTING DETAILS \n'+res);
         if(res > 0){resp.json({message: 'success'})};
     }).catch((err) => {
         dbOps.logSiteError(err);
@@ -778,7 +761,6 @@ function parseFormData(formData) {
         // Add the key-value pair to the parsed data object
         parsedData[key] = value;
     });
-// console.log(JSON.stringify(parsedData));
     // Return the parsed form data
     return parsedData;
 }

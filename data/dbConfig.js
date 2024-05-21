@@ -31,7 +31,7 @@ const adminConfig = {
     port:1433
 }
 
-console.log(adminConfig.database);
+// console.log(adminConfig.database);
 
 module.exports = {
     clientConfig,
