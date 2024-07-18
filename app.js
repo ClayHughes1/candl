@@ -274,15 +274,12 @@ app.get('/api/instagram',function(req,response){
 });
 
 app.get('/api/facebook',function(req,response){
-    // console.log('sending to facebook...............    '+req);
-    // console.log('URL..................'+process.env.INSTAGRAM_URL);
     const  requestData = createLogObj(req);
     dbOps.logLogData(requestData).then((res) =>{
         response.redirect(process.env.FACEOOK_PAGE);
     }).catch((err) => {
-        // console.log('AN ERROR ORRCURRED   \n'+err);
         dbOps.logSiteError(err);
-        response.status(500).json({ error: 'Internal Server Error' });
+        response.status(500).json({ error: 'Internal Server Error',err });
     });
 });
 
@@ -764,10 +761,6 @@ function parseFormData(formData) {
     // Return the parsed form data
     return parsedData;
 }
-
-// dbOps.getDataByType('CPBCID',{ClientId:2}).then((res) => {
-//     console.log("res                      \n"+JSON.stringify(res));
-// });
 
 app.listen(PORT, () =>{
     debug('listening on port ${PORT}');
