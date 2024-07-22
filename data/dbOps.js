@@ -29,7 +29,7 @@ const clientDbConfig = {
     }
 };
   
-  // Configuration for the second database (CLE_Admin)
+// Configuration for the second database (CLE_Admin)
 const adminDbConfig = {
     user: process.env.ADMIN_DB_USERNAME,
     password: process.env.ADMIN_DB_PASSWORD,
@@ -52,6 +52,13 @@ const clientPool = new sql.ConnectionPool(clientDbConfig);
 // Create a connection pool for CLE_Admin
 const adminPool = new sql.ConnectionPool(adminDbConfig);
 
+/**
+ *Executes SQL stored procedure based on request type and returns record Id from specific table 
+ *
+ * @param {*} idType
+ * @param {*} object
+ * @return {*} SelectedId
+ */
 const getId = async(idType,object) => {
     await clientPool.connect()
     // Connect to the database
@@ -127,13 +134,6 @@ const getId = async(idType,object) => {
                 break;
         }
 
-        // request.input('srchValue1', sql.VarChar(50), object.srchValue1);
-        // request.input('srchValue2', sql.VarChar(50), object.srchValue2);
-        // request.input('srchValue3', sql.VarChar(50), object.srchValue3);
-        // request.input('srchValue4', sql.VarChar(50), object.srchValue4);
-        // request.input('srchStart', sql.Date, object.srchStart);
-        // request.input('srchEnd', sql.Date, object.srchEnd);
-
         request.input('srchValue1', sql.VarChar(50), dbParams.srchValue1);
         request.input('srchValue2', sql.VarChar(50), dbParams.srchValue2);
         request.input('srchValue3', sql.VarChar(50), dbParams.srchValue3);
@@ -152,7 +152,12 @@ const getId = async(idType,object) => {
     }
 }
 
-// //Client db opereations
+//Client db opereations
+/**
+ *Execute SQL stored procedure for special offer object
+ *
+ * @return {*} special offer object
+ */
 const getClient = async() =>{
     try{
 
@@ -170,6 +175,11 @@ const getClient = async() =>{
     }
 }
 
+/**
+ *Execute SQL stored procedure to get client object
+ *
+ * @return {*} 
+ */
 const getClientsAsJSON = async() =>{
     try {
         const request = await clientPool.connect();
@@ -187,6 +197,13 @@ const getClientsAsJSON = async() =>{
 }
 
 // Async function to execute stored procedure and return JSON
+/**
+ *Execute specific SQL stored procedure based on data request
+ *
+ * @param {*} storedProcedureName
+ * @param {*} [params={}]
+ * @return {*} 
+ */
 const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
     await clientPool.connect();
     const request = clientPool.request();
@@ -210,6 +227,13 @@ const executeStoredProcedure = async(storedProcedureName, params = {}) =>{
 }
 
 //Get SQL functionality
+/**
+ *Execute SQL stored procedure based on request data object
+ *
+ * @param {*} tyepData
+ * @param {*} params
+ * @return {*} 
+ */
 const getDataByType = async(tyepData,params) => {
     let results;
 
@@ -332,6 +356,13 @@ const getDataByType = async(tyepData,params) => {
 }
 
 // //Insert SQL funtionality
+/**
+ *Execute SQL stored procedure to insert data based on data type
+ *
+ * @param {*} typeData
+ * @param {*} object
+ * @return {*} 
+ */
 const insertObjectToSql = async(typeData,object) => {
     await clientPool.connect();
     // Connect to the database
@@ -447,6 +478,12 @@ const insertObjectToSql = async(typeData,object) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to insret client account details
+ *
+ * @param {*} frnData
+ * @return {*} 
+ */
 const insertAccountDetail = async(frnData) => {
     await clientPool.connect();
     // Connect to the database
@@ -479,6 +516,12 @@ const insertAccountDetail = async(frnData) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to update specific data object based on request
+ *
+ * @param {*} type
+ * @param {*} params
+ */
 const updateSqlObject = async(type,params) => {
     let results;
     try {
@@ -490,15 +533,19 @@ const updateSqlObject = async(type,params) => {
 
 }
 
+/**
+ *Execute SQL stored procedure to updpate password 
+ *
+ * @param {*} username
+ * @param {*} newpass
+ * @return {*} 
+ */
 const resetPass = async(username, newpass) => {
     await clientPool.connect();
     // Connect to the database
     const request = await clientPool.request();
 
     try {
-        // let resJson = await request.query`EXEC uspGetClientPasswordByUserName @username = ${username}`;
-        // let oldPass = JSON.parse(resJson.recordsets[0][0].ClientPass).map(item => item.userPassword);
-
         const encryptedPassword = await encryptPassword(newpass);
        
         request.input('UserEmail', sql.VarChar, username);
@@ -511,6 +558,12 @@ const resetPass = async(username, newpass) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to query client password for login validation
+ *
+ * @param {*} email
+ * @return {*} 
+ */
 const getClientPassword = async(email) => {
     await clientPool.connect();
     // Connect to the database
@@ -526,6 +579,13 @@ const getClientPassword = async(email) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to create client log in data
+ *
+ * @param {*} username
+ * @param {*} password
+ * @return {*} 
+ */
 const insertClientLogin = async(username,password) => {
     await clientPool.connect();
     // Connect to the database
@@ -542,6 +602,13 @@ const insertClientLogin = async(username,password) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to authenticate user during login process
+ *
+ * @param {*} username
+ * @param {*} password
+ * @return {*} 
+ */
 const authenticateUser = async(username,password) => {
     console.log(username+'              '+password);
     await clientPool.connect();
@@ -566,8 +633,13 @@ const authenticateUser = async(username,password) => {
     }
 }
 
-// //Admin db operations
-const getAdmin = async() =>{
+//Admin db operations
+/**
+ *Execute SQL stored procedure to get site logs
+ *
+ * @return {*} 
+ */
+const getSiteLogs = async() =>{
     let result;
     try{
         const request = await adminPool.connect();
@@ -581,6 +653,12 @@ const getAdmin = async() =>{
     }
 }
 
+/**
+ *Execute SQL stored procedure to ccreate site log record in db
+ *
+ * @param {*} log
+ * @return {*} 
+ */
 const logLogData = async(log) => {
 
     // Connect to the database
@@ -607,12 +685,13 @@ const logLogData = async(log) => {
         await logSiteError(err);
         throw err;
     }
-    // finally{
-    //     await adminPool.close();
-    //     return await result.recordsets[0][0];
-    // }
 }
 
+/**
+ *Execute SQL stored procedure to create and insert site error log into db
+ *
+ * @param {*} errObj
+ */
 const logSiteError = async(errObj) => {
     await adminPool.connect()
     const request = await adminPool.request();
@@ -628,6 +707,12 @@ const logSiteError = async(errObj) => {
     }
 }
 
+/**
+ *Execute SQL stored procedure to capture site visitor log into db
+ *
+ * @param {*} IPAddress
+ * @param {*} PageVisited
+ */
 const insertVisit = async(IPAddress,PageVisited) => {
     await adminPool.connect()
     const request = await adminPool.request();
@@ -644,6 +729,12 @@ const insertVisit = async(IPAddress,PageVisited) => {
 }
 
 // Function to encrypt the password
+/**
+ *Performs user password encryption prior to db insertion
+ *
+ * @param {*} password
+ * @return {*} 
+ */
 async function encryptPassword(password) {
    try {
     const saltRounds = 10; // Number of salt rounds for bcrypt
@@ -655,6 +746,13 @@ async function encryptPassword(password) {
    }
 }
 // Function to decrypt the password
+/**
+ *Performs decryption process for site user password to validate user login data
+ *
+ * @param {*} encryptedPassword
+ * @param {*} userPassword
+ * @return {*} 
+ */
 async function decryptPassword(encryptedPassword, userPassword) {
     try {
         let answer = await bcrypt.compare(userPassword, encryptedPassword);
@@ -666,6 +764,12 @@ async function decryptPassword(encryptedPassword, userPassword) {
     //bcrypt.compare(userPassword, encryptedPassword);
 }
 
+/**
+ *Execute SQL stored procedure to get client id by email
+ *
+ * @param {*} username
+ * @return {*} 
+ */
 async function getClientIdByEmail(username){
     await clientPool.connect();
     // Connect to the database
@@ -686,7 +790,7 @@ module.exports = {
     decryptPassword,
     encryptPassword,
     getClient,
-    getAdmin,
+    getSiteLogs,
     getClientsAsJSON,
     getDataByType,
     getClientPassword,
