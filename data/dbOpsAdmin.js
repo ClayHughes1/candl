@@ -3,23 +3,6 @@ const recJson = {};
 const { BREADCRUMB_KEY } = require('instagram-private-api/dist/core/constants');
 const sql = require('mssql');
 
-//Admin db operations
-// const getAdmin = async() =>{
-//     //email
-//     try{
-//         let con = await sql.connect(adminConfig);
-//         // let userMap = await con.request()
-//         // .query("select id,userPassEncId from siteUser where userEmail = '"+email+"'");
-//         await sql.close();
-
-//         // console.log('Admin.............      '+JSON.stringify(con));
-//         // return userMap;
-
-//     }catch(err)
-//     {
-//         console.error("an error occurred while trying to connect ot the db server  "+err)
-//     }
-// }
 
 const logLogData = async(log) => {
         

@@ -4,6 +4,11 @@ require('dotenv').config();
 
 
 // client config 
+/** 
+ * Creates config object for SQL Client db connection object
+ * @type {*} 
+ * 
+*/
 const clientConfig = {
     user:process.env.DB_USERNAME,
     password: process.env.DB_PASSWORD,
@@ -18,6 +23,10 @@ const clientConfig = {
 }
 
 //admin config
+/** 
+ * Creates config object for SQL Admin db connection object
+ * @type {*} 
+ * */
 const adminConfig = {
     user:process.env.ADMIN_DB_USERNAME,
     password: process.env.ADMIN_DB_PASSWORD,

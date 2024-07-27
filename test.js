@@ -42,6 +42,12 @@ describe('API Tests', function () {
 });
 
 // Function to write data to a CSV file
+/**
+ *Write test data to CSV file
+ *
+ * @param {*} data
+ * @return {*} 
+ */
 const writeToCSV = async(data)=> {
     const headers = ['responseUrl', 'data', 'roundtrip', 'requestBodyLength', 'path', 'method','status','timestamp'];
     const headerString = headers.join(',') + '\n';
@@ -65,6 +71,11 @@ const writeToCSV = async(data)=> {
     }
 }
 
+/**
+ *Performs concurrency testing for main site page
+ *
+ * @param {*} concurrency
+ */
 function tstHomeGet(concurrency){
     console.log('GETTING HOME');
     //Get qoute submissions perf sec
@@ -112,6 +123,11 @@ function tstHomeGet(concurrency){
     });
 }
 
+/**
+ *Performs concurrency testing for main site page render and client qoute request processes
+ *
+ * @param {*} concurrency
+ */
 function tstHomeGetAndQoutePost(concurrency){
     console.log('GETTING HOME AN POSTING');
 
@@ -205,6 +221,11 @@ function tstHomeGetAndQoutePost(concurrency){
     });
 }
 
+/**
+ *Performs concurrency testing for stand alone qoute request process
+ *
+ * @param {*} concurrency
+ */
 function tstQRSubmit(concurrency){
     console.log('POSTING ');
 
@@ -265,6 +286,11 @@ console.log(response.request.path);
     });
 }
 
+/**
+ *Performs concurrency testing for qoute querying process
+ *
+ * @param {*} concurrency
+ */
 function tstQRGet(concurrency){
     console.log('GETTING QOUTE');
 
@@ -312,6 +338,11 @@ function tstQRGet(concurrency){
     });
 }
 
+/**
+ *Performs concurrency testing for assistance request
+ *
+ * @param {*} concurrency
+ */
 function tstRHPost(concurrency)
 {
     console.log('POSTING HELP');
@@ -368,6 +399,11 @@ function tstRHPost(concurrency)
     });
 }
 
+/**
+ *Performs concurrency testing for visitor log data insertion
+ *
+ * @param {*} concurrency
+ */
 function postVisit(concurrency){
     it('Post requst asistance data to DB', async function (done) {
         // Create an array to store promises for concurrent requests

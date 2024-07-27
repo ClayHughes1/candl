@@ -146,7 +146,18 @@ app.get('/auth/google/callback',
 app.get('/api/admin/logout', (req, res) => {
     req.logout(function(err) {
         if (err) { return next(err); }
-        res.redirect('/admin.html');
+        res.redirect('/admin/admin.html');
+
+        // res.redirect('/admin.html');
+    });
+});
+
+app.get('/', (req, res) => {
+    req.logout(function(err) {
+        if (err) { return next(err); }
+        res.redirect('/admin/admin.html');
+
+        // res.redirect('/admin.html');
     });
 });
 
